@@ -22,8 +22,8 @@ export default function GratuityCalculator() {
 
         const n = Math.round(years);
 
-        // Limits: 25L for Govt (effective Jan 2024), 20L for Private (as of now)
-        const TAX_FREE_LIMIT = isGovt ? 2500000 : 2000000;
+        // Limits: Fully exempt for Govt, 20L for Private (as of FY 2025-26)
+        const TAX_FREE_LIMIT = isGovt ? Infinity : 2000000;
 
         if (n < 5) { // Fixed Term employees might be eligible earlier, but standard rule is 5
             return {
@@ -54,24 +54,30 @@ export default function GratuityCalculator() {
     }, [basicPay, totalCTC, years, isGovt]);
 
     return (
-        <div className="max-w-7xl mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
             {/* INPUTS */}
             <div className="lg:col-span-5 space-y-6">
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="bg-indigo-600 p-2 rounded-lg text-white">
-                            <Award className="w-5 h-5" />
+                <div className="bg-white p-6 md:p-8 rounded-3xl border border-white/40 shadow-xl shadow-slate-200/50 backdrop-blur-xl space-y-8 relative overflow-hidden">
+                    {/* Decorative Top Gradient */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-violet-500 to-primary"></div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="bg-primary/10 p-3 rounded-2xl text-primary ring-1 ring-primary/20">
+                            <Award className="w-6 h-6" />
                         </div>
-                        <h2 className="text-lg font-bold text-gray-900">Gratuity Calculator</h2>
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900 tracking-tight">Gratuity Calculator</h2>
+                            <p className="text-xs text-gray-500 font-medium mt-0.5">Estimate your end-of-service benefits</p>
+                        </div>
                     </div>
 
                     {/* Employee Type Toggle */}
-                    <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-200">
-                        <button onClick={() => setIsGovt(false)} className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all ${!isGovt ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>Private Sector</button>
-                        <button onClick={() => setIsGovt(true)} className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all ${isGovt ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>Govt. Employee</button>
+                    <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-200/60">
+                        <button onClick={() => setIsGovt(false)} className={`flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all ${!isGovt ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}>Private Sector</button>
+                        <button onClick={() => setIsGovt(true)} className={`flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all ${isGovt ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}>Govt. Employee</button>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <MoneyInput
                             label="Monthly Basic + DA"
                             value={basicPay}
@@ -83,28 +89,31 @@ export default function GratuityCalculator() {
                             value={totalCTC}
                             onChange={setTotalCTC}
                         />
-                        <p className="text-[10px] text-gray-400">
-                            Code on Wages (Active Nov 2025): If Basic+DA is less than 50% of CTC, calculations use 50% of CTC.
-                        </p>
+                        <div className="bg-amber-50/50 rounded-xl p-3 border border-amber-100 flex items-start gap-2.5">
+                            <Info className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                            <p className="text-[10px] text-amber-700 leading-relaxed font-medium">
+                                Code on Wages (Nov 2025): If Basic+DA is less than 50% of CTC, calculation uses 50% of CTC.
+                            </p>
+                        </div>
                     </div>
 
                     <div className="space-y-4">
                         <div>
-                            <div className="flex justify-between items-center mb-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Years of Service</label>
-                                <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">{years} Years</span>
+                            <div className="flex justify-between items-center mb-3 px-1">
+                                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Years of Service</label>
+                                <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg ring-1 ring-primary/20">{years} Years</span>
                             </div>
                             <input
                                 type="range"
                                 min="1" max="50"
                                 value={years}
                                 onChange={(e) => setYears(Number(e.target.value))}
-                                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary/80 transition-all"
                             />
                             {!calc.eligible && (
-                                <div className="mt-2 text-xs text-amber-600 font-bold flex items-center gap-1.5 bg-amber-50 p-2 rounded-lg">
-                                    <Info className="w-3 h-3" />
-                                    Min. 5 years required for eligibility
+                                <div className="mt-4 text-xs text-rose-600 font-bold flex items-center gap-2 bg-rose-50 p-3 rounded-xl border border-rose-100">
+                                    <Info className="w-4 h-4" />
+                                    Minimum 5 years required for eligibility
                                 </div>
                             )}
                         </div>
@@ -114,38 +123,46 @@ export default function GratuityCalculator() {
 
             {/* OUTPUT */}
             <div className="lg:col-span-7 space-y-6">
-                <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
-                    <div className="flex items-center gap-3 mb-6">
-                        <Briefcase className="w-5 h-5 text-gray-400" />
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Estimation</span>
-                    </div>
+                {/* Main Result Card */}
+                <div className="bg-gradient-to-br from-primary to-violet-700 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden group">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
+                    <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
 
-                    <div className="mb-8">
-                        <div className="text-4xl font-bold text-gray-900 tracking-tight mb-2">
-                            {toINR(Math.round(calc.payable))}
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-8 opacity-90">
+                            <Briefcase className="w-5 h-5" />
+                            <span className="text-xs font-bold uppercase tracking-widest">Total Payable Gratuity</span>
                         </div>
-                        <div className="text-sm font-medium text-gray-500">Total Gratuity Payable</div>
-                    </div>
 
-                    {calc.isWageIncreased && (
-                        <div className="mb-6 bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-xs text-indigo-800 flex items-start gap-2">
-                            <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                            <div>
-                                <strong>Impact of New Wage Code:</strong><br />
-                                Your Basic+DA was less than 50% of CTC. Calculation used <strong>{toINR(calc.wageBasis)}</strong> (50% of CTC) as the base.
+                        <div className="mb-8">
+                            <div className="text-5xl md:text-6xl font-extrabold tracking-tight mb-2 font-display">
+                                {toINR(Math.round(calc.payable))}
                             </div>
+                            <div className="text-white/60 font-medium">Estimated amount based on current rules</div>
                         </div>
-                    )}
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                            <div className="text-[10px] font-bold text-emerald-800 uppercase tracking-widest mb-1">Tax Exempt</div>
-                            <div className="text-xl font-bold text-emerald-700">{toINR(Math.round(calc.taxExempt))}</div>
-                            <div className="text-[10px] text-emerald-600 mt-1 opacity-80 max-w-[150px]">Up to {toINR(calc.limit)} is tax-free.</div>
-                        </div>
-                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                            <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Taxable Portion</div>
-                            <div className="text-xl font-bold text-gray-700">{toINR(Math.round(calc.taxable))}</div>
+                        {calc.isWageIncreased && (
+                            <div className="bg-white/10 rounded-2xl p-4 border border-white/20 backdrop-blur-md mb-6 hover:bg-white/15 transition-colors">
+                                <div className="flex items-start gap-3">
+                                    <Info className="w-5 h-5 text-indigo-200 mt-0.5 shrink-0" />
+                                    <div className="text-sm text-indigo-50 leading-relaxed">
+                                        <strong className="text-white">Wage Code Impact:</strong> Calculation bases shifted. used <strong className="text-white decoration-2 underline decoration-indigo-300">{toINR(calc.wageBasis)}</strong> (50% CTC) instead of Basic pay.
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-emerald-500/20 rounded-2xl p-4 border border-emerald-400/30 backdrop-blur-md">
+                                <div className="text-[10px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Tax Exempt</div>
+                                <div className="text-2xl font-bold text-white mb-1">{toINR(Math.round(calc.taxExempt))}</div>
+                                <div className="text-[10px] text-emerald-100/70">Max Cap: {toINR(calc.limit)}</div>
+                            </div>
+                            <div className="bg-white/10 rounded-2xl p-4 border border-white/10 backdrop-blur-md">
+                                <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-1">Taxable Portion</div>
+                                <div className="text-2xl font-bold text-white">{toINR(Math.round(calc.taxable))}</div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -111,63 +111,80 @@ export default function PFCalculator() {
     // I will correct that in the code content below.
 
     return (
-        <div className="max-w-7xl mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
             {/* INPUTS */}
             <div className="lg:col-span-4 space-y-6">
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="bg-indigo-600 p-2 rounded-lg text-white">
-                            <PiggyBank className="w-5 h-5" />
+                <div className="bg-white p-6 md:p-8 rounded-3xl border border-white/40 shadow-xl shadow-slate-200/50 backdrop-blur-xl space-y-8 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="bg-indigo-50 p-3 rounded-2xl text-indigo-600 ring-1 ring-indigo-100">
+                            <PiggyBank className="w-6 h-6" />
                         </div>
-                        <h2 className="text-lg font-bold text-gray-900">PF Calculator</h2>
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900 tracking-tight">PF Calculator</h2>
+                            <p className="text-xs text-gray-500 font-medium mt-0.5">Plan your retirement corpus</p>
+                        </div>
                     </div>
 
-                    <MoneyInput
-                        label="Monthly Basic Pay"
-                        value={basicPay}
-                        onChange={setBasicPay}
-                        large
-                    />
-
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-6">
                         <MoneyInput
-                            label="Current Balance"
-                            value={currentBalance}
-                            onChange={setCurrentBalance}
+                            label="Monthly Basic Pay"
+                            value={basicPay}
+                            onChange={setBasicPay}
+                            large
                         />
-                        <MoneyInput
-                            label="Interest Rate (%)"
-                            value={interestRate}
-                            onChange={setInterestRate}
-                            placeholder="8.25"
-                            isManual
-                            showToggle={false}
-                        />
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current Age</label>
-                            <input type="number" value={currentAge} onChange={e => setCurrentAge(Number(e.target.value))} className="w-full p-2 border rounded-xl font-bold text-gray-700 outline-none focus:border-indigo-500" />
+                        <div className="grid grid-cols-2 gap-5">
+                            <MoneyInput
+                                label="Current Balance"
+                                value={currentBalance}
+                                onChange={setCurrentBalance}
+                            />
+                            <MoneyInput
+                                label="Interest Rate (%)"
+                                value={interestRate}
+                                onChange={setInterestRate}
+                                placeholder="8.25"
+                                isManual
+                                showToggle={false}
+                            />
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Retirement Age</label>
-                            <input type="number" value={retirementAge} onChange={e => setRetirementAge(Number(e.target.value))} className="w-full p-2 border rounded-xl font-bold text-gray-700 outline-none focus:border-indigo-500" />
-                        </div>
-                    </div>
 
-                    <div>
-                        <div className="flex justify-between mb-2">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Annual Increment</label>
-                            <span className="text-xs font-bold text-indigo-600">{annualIncrement}%</span>
+                        <div className="grid grid-cols-2 gap-5">
+                            <div className="space-y-2 group">
+                                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest group-focus-within:text-indigo-600 transition-colors">Current Age</label>
+                                <input
+                                    type="number"
+                                    value={currentAge}
+                                    onChange={e => setCurrentAge(Number(e.target.value))}
+                                    className="w-full p-3 border border-slate-200 rounded-xl font-bold text-gray-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm transition-all"
+                                />
+                            </div>
+                            <div className="space-y-2 group">
+                                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest group-focus-within:text-indigo-600 transition-colors">Retirement Age</label>
+                                <input
+                                    type="number"
+                                    value={retirementAge}
+                                    onChange={e => setRetirementAge(Number(e.target.value))}
+                                    className="w-full p-3 border border-slate-200 rounded-xl font-bold text-gray-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm transition-all"
+                                />
+                            </div>
                         </div>
-                        <input
-                            type="range"
-                            min="0" max="20"
-                            value={annualIncrement}
-                            onChange={(e) => setAnnualIncrement(parseInt(e.target.value))}
-                            className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                        />
+
+                        <div>
+                            <div className="flex justify-between mb-3 px-1">
+                                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Annual Increment</label>
+                                <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg ring-1 ring-indigo-100">{annualIncrement}%</span>
+                            </div>
+                            <input
+                                type="range"
+                                min="0" max="20"
+                                value={annualIncrement}
+                                onChange={(e) => setAnnualIncrement(parseInt(e.target.value))}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-500 transition-all"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -175,41 +192,46 @@ export default function PFCalculator() {
             {/* OUTPUT */}
             <div className="lg:col-span-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Corpus</div>
-                        <div className="text-2xl font-bold text-indigo-600">{toINR(Math.round(calc.totalCorpus))}</div>
+                    <div className="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10"><PiggyBank className="w-16 h-16 transform rotate-12" /></div>
+                        <div className="relative z-10">
+                            <div className="text-[11px] font-bold text-indigo-200 uppercase tracking-widest mb-1">Total Corpus</div>
+                            <div className="text-3xl font-bold tracking-tight">{toINR(Math.round(calc.totalCorpus))}</div>
+                        </div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Interest</div>
-                        <div className="text-2xl font-bold text-emerald-600">{toINR(Math.round(calc.totalInterest))}</div>
+                    <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-lg shadow-slate-100/50 group hover:border-emerald-200 transition-colors">
+                        <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1 group-hover:text-emerald-600 transition-colors">Total Interest</div>
+                        <div className="text-2xl font-bold text-emerald-600 group-hover:text-emerald-700 transition-colors">{toINR(Math.round(calc.totalInterest))}</div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Your Contribution</div>
-                        <div className="text-2xl font-bold text-amber-600">{toINR(Math.round(calc.employeeShare))}</div>
+                    <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-lg shadow-slate-100/50 group hover:border-amber-200 transition-colors">
+                        <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1 group-hover:text-amber-600 transition-colors">Your Contribution</div>
+                        <div className="text-2xl font-bold text-amber-600 group-hover:text-amber-700 transition-colors">{toINR(Math.round(calc.employeeShare))}</div>
                     </div>
                 </div>
 
                 {/* Simple Chart / Table */}
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 font-bold text-gray-700 flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-indigo-500" />
+                <div className="bg-white rounded-3xl border border-slate-200/60 shadow-xl shadow-slate-100/50 overflow-hidden backdrop-blur-xl">
+                    <div className="p-5 border-b border-gray-100 font-bold text-gray-800 flex items-center gap-2 bg-gray-50/50">
+                        <div className="bg-white p-1.5 rounded-lg shadow-sm border border-gray-100">
+                            <TrendingUp className="w-4 h-4 text-indigo-500" />
+                        </div>
                         Growth Projection
                     </div>
-                    <div className="max-h-[400px] overflow-auto">
+                    <div className="max-h-[500px] overflow-auto custom-scrollbar">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-gray-50 text-xs font-bold text-gray-400 uppercase tracking-widest sticky top-0">
+                            <thead className="bg-gray-50/80 text-[10px] font-bold text-gray-500 uppercase tracking-widest sticky top-0 backdrop-blur-sm z-10">
                                 <tr>
-                                    <th className="px-6 py-3">Age</th>
-                                    <th className="px-6 py-3">Year</th>
-                                    <th className="px-6 py-3 text-right">Balance</th>
+                                    <th className="px-6 py-4">Age</th>
+                                    <th className="px-6 py-4">Year</th>
+                                    <th className="px-6 py-4 text-right">Balance</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {calc.breakdown.map((row) => (
-                                    <tr key={row.age} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-3 font-medium text-gray-600">{row.age}</td>
+                                    <tr key={row.age} className="hover:bg-indigo-50/30 transition-colors group">
+                                        <td className="px-6 py-3 font-medium text-gray-600 group-hover:text-indigo-700">{row.age}</td>
                                         <td className="px-6 py-3 text-gray-500">{row.year}</td>
-                                        <td className="px-6 py-3 text-right font-mono font-bold text-indigo-600">{toINR(Math.round(row.balance))}</td>
+                                        <td className="px-6 py-3 text-right font-mono font-bold text-gray-700 group-hover:text-indigo-700">{toINR(Math.round(row.balance))}</td>
                                     </tr>
                                 ))}
                             </tbody>

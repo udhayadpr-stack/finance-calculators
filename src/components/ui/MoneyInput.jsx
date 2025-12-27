@@ -44,14 +44,14 @@ export const MoneyInput = ({
     return (
         <div className={clsx("relative transition-all duration-200 group", !isDisabled ? 'opacity-100' : 'opacity-90 hover:opacity-100')}>
             {label && (
-                <div className="flex justify-between items-center mb-1.5">
-                    <label className={clsx("text-[10px] font-bold uppercase tracking-widest", isManual ? 'text-amber-700' : 'text-gray-500')}>
+                <div className="flex justify-between items-center mb-2">
+                    <label className={clsx("text-[11px] font-bold uppercase tracking-widest", isManual ? 'text-amber-700' : 'text-gray-500 group-focus-within:text-primary transition-colors')}>
                         {label}
                     </label>
                     {showToggle && onToggleMode && (
                         <button
                             onClick={onToggleMode}
-                            className={clsx("flex items-center gap-1 text-[10px] font-bold uppercase transition-colors", isManual ? 'text-amber-600 hover:text-amber-800' : 'text-gray-400 hover:text-gray-600')}
+                            className={clsx("flex items-center gap-1 text-[10px] font-bold uppercase transition-colors px-2 py-1 rounded-md", isManual ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-gray-100 text-gray-500 hover:text-gray-700 hover:bg-gray-200')}
                             title={isManual ? "Switch to Auto-Calculation" : "Override Manually"}
                         >
                             {isManual ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
@@ -61,7 +61,7 @@ export const MoneyInput = ({
                 </div>
             )}
             <div className="relative">
-                <span className={clsx("absolute left-3 top-1/2 -translate-y-1/2 font-medium", large ? 'text-2xl text-gray-400' : 'text-sm text-gray-400')}>₹</span>
+                <span className={clsx("absolute left-4 top-1/2 -translate-y-1/2 font-medium transition-colors pointer-events-none z-10", large ? 'text-2xl text-gray-400 group-focus-within:text-primary' : 'text-sm text-gray-400 group-focus-within:text-primary')}>₹</span>
                 <input
                     type="text"
                     value={display}
@@ -71,11 +71,15 @@ export const MoneyInput = ({
                     disabled={isDisabled}
                     placeholder={placeholder || "0"}
                     className={clsx(
-                        "w-full pl-8 pr-3 font-semibold bg-transparent border rounded-xl outline-none transition-all",
-                        large ? 'py-2 text-3xl border-gray-200 focus:border-indigo-500 text-gray-900 placeholder-gray-300' : 'py-2.5 text-sm',
-                        !large && isManual
-                            ? 'bg-amber-50/50 border-amber-200 text-amber-900 focus:ring-2 focus:ring-amber-100 focus:border-amber-300'
-                            : !large && 'bg-gray-50 border-gray-200 text-gray-600 cursor-not-allowed select-all'
+                        "w-full pl-10 pr-4 font-semibold bg-white border outline-none transition-all rounded-xl",
+                        large
+                            ? 'py-3 text-3xl text-gray-900 placeholder-gray-300 shadow-sm'
+                            : 'py-3 text-sm shadow-sm',
+                        isFocused
+                            ? 'border-primary ring-4 ring-primary/10 shadow-lg shadow-primary/5'
+                            : 'border-slate-200 hover:border-slate-300',
+                        !large && isManual && 'bg-amber-50/30 border-amber-200 text-amber-900 focus:ring-amber-500/20 focus:border-amber-500',
+                        !large && !isFocused && !isManual && isDisabled && 'bg-gray-50 text-gray-500 cursor-not-allowed border-dashed'
                     )}
                 />
             </div>
