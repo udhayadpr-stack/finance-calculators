@@ -1,3 +1,8 @@
+import { useState, useMemo } from 'react';
+import { Award, Info, Briefcase } from 'lucide-react';
+import { MoneyInput } from '../ui/MoneyInput';
+import { toINR, parseMoney } from '../../utils/formatters';
+
 export default function GratuityCalculator() {
     const [basicPay, setBasicPay] = useState(40000); // Basic + DA
     const [totalCTC, setTotalCTC] = useState(100000); // Monthly CTC
