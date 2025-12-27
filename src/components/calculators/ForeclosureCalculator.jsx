@@ -9,6 +9,8 @@ import {
 import { MoneyInput } from '../ui/MoneyInput';
 import { toINR, parseMoney } from '../../utils/formatters';
 
+import { calculateForeclosure } from '../../utils/calculators/foreclosure';
+
 export default function ForeclosureCalculator() {
     const [outstandingPrincipal, setOutstandingPrincipal] = useState(2000000);
     const [interestRate, setInterestRate] = useState(9);
@@ -16,41 +18,12 @@ export default function ForeclosureCalculator() {
     const [foreclosureChargesPercent, setForeclosureChargesPercent] = useState(0);
 
     const calc = useMemo(() => {
-        const p = parseMoney(outstandingPrincipal);
-        const r = interestRate / 12 / 100;
-        const n = remainingTenure;
-
-        if (p === 0 || n === 0) return {
-            foreclosureCost: 0,
-            interestIfContinued: 0,
-            totalIfContinued: 0,
-            emi: 0,
-            netSavings: 0
-        };
-
-        // 1. If continued
-        // EMI
-        const emi = (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-        const totalAmount = emi * n;
-        const interestIfContinued = totalAmount - p;
-
-        // 2. If foreclosed
-        const penalty = p * (foreclosureChargesPercent / 100);
-        // GST on penalty usually 18% in India, let's include it or just assume usage inputs net percent
-        // Let's assume input percent is gross.
-        const foreclosureCost = p + penalty;
-
-        // 3. Difference
-        const netSavings = totalAmount - foreclosureCost;
-
-        return {
-            foreclosureCost,
-            penalty,
-            interestIfContinued,
-            totalIfContinued: totalAmount,
-            emi,
-            netSavings
-        };
+        return calculateForeclosure({
+            outstandingPrincipal: parseMoney(outstandingPrincipal),
+            interestRate,
+            remainingTenure,
+            foreclosureChargesPercent
+        });
     }, [outstandingPrincipal, interestRate, remainingTenure, foreclosureChargesPercent]);
 
     return (

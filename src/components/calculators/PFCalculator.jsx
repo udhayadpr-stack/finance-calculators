@@ -8,6 +8,8 @@ import {
 import { MoneyInput } from '../ui/MoneyInput';
 import { toINR, parseMoney } from '../../utils/formatters';
 import clsx from 'clsx';
+import { calculatePF } from '../../utils/calculators/pf';
+
 
 export default function PFCalculator() {
     // Inputs
@@ -23,88 +25,16 @@ export default function PFCalculator() {
     const [employerContrRatio, setEmployerContrRatio] = useState(12);
 
     const calc = useMemo(() => {
-        let year = new Date().getFullYear();
-        let balance = parseMoney(currentBalance);
-        let monthlyBasic = parseMoney(basicPay);
-        let age = currentAge;
-
-        // Trackers
-        let totalInvestedEmployee = 0;
-        let totalInvestedEmployer = 0;
-        let totalInterest = 0;
-
-        const breakdown = [];
-
-        // EPS Cap is 15000 usually for calculation splitting
-        const WAGE_CAP = 15000;
-
-        let totalMonths = (retirementAge - currentAge) * 12;
-
-        for (let m = 0; m < totalMonths; m++) {
-            // Annual Increment logic (apply every 12th month relative to start)
-            if (m > 0 && m % 12 === 0) {
-                monthlyBasic = monthlyBasic * (1 + (annualIncrement / 100));
-                year++;
-                age++;
-            }
-
-            // Calculate Contributions
-            // Employee: Straight % of Basic
-            let empShare = monthlyBasic * (employeeContrRatio / 100);
-
-            // Employer: Split into EPS and EPF
-            // EPS is 8.33% of Basic (capped at 15000 usually)
-            let epsShare = 0;
-            let epfShareEmployer = 0;
-
-            // Standard rule: Employer pays 12%. 
-            // 8.33% to EPS (max 1250), rest to EPF.
-            let totalEmployerContribution = monthlyBasic * (employerContrRatio / 100);
-
-            // EPS Calculation
-            // If basic > 15000, EPS is calculated on 15000 -> 1250
-            // If basic < 15000, EPS is 8.33% of basic
-            let epsBasis = Math.min(monthlyBasic, WAGE_CAP);
-            epsShare = epsBasis * 0.0833;
-
-            // EPF Employer = Total Employer Contribution - EPS
-            epfShareEmployer = totalEmployerContribution - epsShare;
-
-            // Add to balance logic
-            // Interest is usually credited annually on the opening balance + monthly additions
-            // Simplified: Monthly interest compounding (though practically it's annual credit)
-            // Rate is annual. Monthly rate = rate / 1200
-            let monthlyInterest = (balance + empShare + epfShareEmployer) * (interestRate / 100 / 12);
-
-            // Update trackers
-            totalInvestedEmployee += empShare;
-            totalInvestedEmployer += epfShareEmployer;
-            totalInterest += monthlyInterest;
-
-            balance += empShare + epfShareEmployer + monthlyInterest;
-
-            // Record annual snapshot
-            if ((m + 1) % 12 === 0 || m === totalMonths - 1) {
-                breakdown.push({
-                    age,
-                    year,
-                    basic: monthlyBasic,
-                    balance,
-                    interest: totalInterest,
-                    empShare: totalInvestedEmployee,
-                    employerShare: totalInvestedEmployer
-                });
-            }
-        }
-
-        return {
-            totalCorpus: balance,
-            employeeShare: currentBalance + totalInvestedEmployee, // Include initial balance in attribution? Partially. Let's just track additions.
-            employerShare: totalInvestedEmployer,
-            totalInterest,
-            breakdown
-        };
-
+        return calculatePF({
+            basicPay,
+            currentAge,
+            retirementAge,
+            currentBalance,
+            interestRate,
+            annualIncrement,
+            employeeContrRatio,
+            employerContrRatio
+        });
     }, [basicPay, currentAge, retirementAge, currentBalance, interestRate, annualIncrement, employeeContrRatio, employerContrRatio]);
 
     // Fix: The loop logic had a syntax error in variable name `totalEmployer contribution` -> `totalEmployerContribution`
@@ -209,7 +139,47 @@ export default function PFCalculator() {
                     </div>
                 </div>
 
-                {/* Simple Chart / Table */}
+                {/* Visual Breakdown */}
+                <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-100/50 backdrop-blur-xl flex items-center justify-center min-h-[180px]">
+                    <div className="w-full max-w-xl space-y-6">
+                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">
+                            <span>Corpus Breakdown</span>
+                        </div>
+                        <div className="relative h-14 w-full bg-slate-50 rounded-full overflow-hidden flex shadow-inner ring-1 ring-slate-100">
+                            {/* Employee Share */}
+                            <div
+                                style={{ width: `${(calc.employeeShare / calc.totalCorpus) * 100}%` }}
+                                className="h-full bg-amber-500 flex items-center justify-center text-white font-bold text-[10px] md:text-xs relative group"
+                            >
+                                <span className={clsx("drop-shadow-md z-10 whitespace-nowrap px-1", (calc.employeeShare / calc.totalCorpus) < 0.1 ? "hidden group-hover:block" : "block")}>You</span>
+                                <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent"></div>
+                            </div>
+
+                            {/* Employer Share */}
+                            <div
+                                style={{ width: `${(calc.employerShare / calc.totalCorpus) * 100}%` }}
+                                className="h-full bg-indigo-500 flex items-center justify-center text-white font-bold text-[10px] md:text-xs relative group"
+                            >
+                                <span className={clsx("drop-shadow-md z-10 whitespace-nowrap px-1", (calc.employerShare / calc.totalCorpus) < 0.1 ? "hidden group-hover:block" : "block")}>Employer</span>
+                                <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent"></div>
+                            </div>
+
+                            {/* Interest */}
+                            <div
+                                style={{ width: `${(calc.totalInterest / calc.totalCorpus) * 100}%` }}
+                                className="h-full bg-emerald-500 flex items-center justify-center text-white font-bold text-[10px] md:text-xs relative group"
+                            >
+                                <span className="drop-shadow-md z-10 whitespace-nowrap px-1">Interest</span>
+                                <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent"></div>
+                            </div>
+                        </div>
+                        <div className="flex justify-between text-[10px] md:text-xs font-bold text-gray-600 pt-2 border-t border-gray-100 flex-wrap gap-2">
+                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-amber-500 shadow-sm"></div> You: {Math.round((calc.employeeShare / calc.totalCorpus) * 100)}%</div>
+                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-indigo-500 shadow-sm"></div> Employer: {Math.round((calc.employerShare / calc.totalCorpus) * 100)}%</div>
+                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></div> Interest: {Math.round((calc.totalInterest / calc.totalCorpus) * 100)}%</div>
+                        </div>
+                    </div>
+                </div>
                 <div className="bg-white rounded-3xl border border-slate-200/60 shadow-xl shadow-slate-100/50 overflow-hidden backdrop-blur-xl">
                     <div className="p-5 border-b border-gray-100 font-bold text-gray-800 flex items-center gap-2 bg-gray-50/50">
                         <div className="bg-white p-1.5 rounded-lg shadow-sm border border-gray-100">

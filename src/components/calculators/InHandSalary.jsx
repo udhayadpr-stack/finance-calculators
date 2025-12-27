@@ -6,22 +6,7 @@ import {
 import { MoneyInput } from '../ui/MoneyInput';
 import { toINR, parseMoney } from '../../utils/formatters';
 
-// --- CONSTANTS: FY 2025-26 ---
-const SLABS_NEW = [
-    { limit: 300000, rate: 0 },
-    { limit: 700000, rate: 0.05 },
-    { limit: 1000000, rate: 0.10 },
-    { limit: 1200000, rate: 0.15 },
-    { limit: 1500000, rate: 0.20 },
-    { limit: Infinity, rate: 0.30 },
-];
 
-const SLABS_OLD = [
-    { limit: 250000, rate: 0 },
-    { limit: 500000, rate: 0.05 },
-    { limit: 1000000, rate: 0.20 },
-    { limit: Infinity, rate: 0.30 },
-];
 
 // --- SUB COMPONENTS ---
 const Row = ({ label, val, color }) => (
@@ -45,6 +30,8 @@ const Bar = ({ height, color, val, label, txtColor }) => (
         <span className="text-gray-400 uppercase text-[10px] tracking-wider">{label}</span>
     </div>
 );
+
+import { calculateSalary } from '../../utils/calculators/salary';
 
 export default function InHandSalaryCalculator() {
 
@@ -81,97 +68,14 @@ export default function InHandSalaryCalculator() {
 
     // --- CALCULATION CORE ---
     const calc = useMemo(() => {
-        // 1. Basis
-        const safeCtcInput = parseMoney(ctcInput);
-
-        // 2. Earnings Structure
-        let valBasic = overrides.basic !== undefined ? parseMoney(overrides.basic) : safeCtcInput * (config.basicRatio / 100);
-        let valHRA = overrides.hra !== undefined ? parseMoney(overrides.hra) : valBasic * (config.hraRatio / 100);
-        let valBonus = parseMoney(oneOffs.bonus);
-        let valInsurance = parseMoney(oneOffs.insurance);
-
-        // 3. Ghost Components
-        let pfBasis = config.pfCapped ? Math.min(valBasic, 180000) : valBasic;
-        let valEmpPF = overrides.empPF !== undefined ? parseMoney(overrides.empPF) : pfBasis * 0.12;
-        let valGratuity = valBasic * (config.gratuityRate / 100);
-        // Conditional Admin Charges
-        let valAdmin = config.includeAdminCharges ? valBasic * 0.0065 : 0;
-
-        let ghostTotal = valEmpPF + valGratuity + valInsurance + valAdmin;
-
-        // 4. Special Allowance
-        let valSpecial = 0;
-        if (overrides.special !== undefined) {
-            valSpecial = parseMoney(overrides.special);
-        } else {
-            const potentialSpecial = safeCtcInput - (valBasic + valHRA + valBonus + ghostTotal);
-            valSpecial = Math.max(0, potentialSpecial);
-        }
-
-        // 5. Reconciliation
-        const reconciledCTC = valBasic + valHRA + valSpecial + valBonus + ghostTotal;
-        const annualGross = valBasic + valHRA + valSpecial + valBonus;
-        const ctcVariance = reconciledCTC - safeCtcInput;
-
-        // 6. Deductions
-        let valEePF = pfBasis * 0.12;
-        let monthlyPT = overrides.pt !== undefined ? parseMoney(overrides.pt) : 208;
-        let annualPT = monthlyPT * 12;
-
-        // 7. Tax Calc
-        let rentExemption = Math.max(0, Math.min(
-            valHRA,
-            config.metro ? valBasic * 0.5 : valBasic * 0.4,
-            savers.rent > valBasic * 0.1 ? savers.rent - (valBasic * 0.1) : 0
-        ));
-
-        const stdDedNew = 75000;
-        const stdDedOld = 50000;
-
-        const taxableNew = Math.max(0, annualGross - stdDedNew);
-        const taxableOld = Math.max(0, annualGross - stdDedOld - rentExemption - annualPT - savers.sec80c - savers.sec80d - savers.nps);
-
-        const calculateTax = (income, r) => {
-            let tax = 0;
-            const slabs = r === 'new' ? SLABS_NEW : SLABS_OLD;
-            let prevLimit = 0;
-            for (let slab of slabs) {
-                if (income > prevLimit) {
-                    const amt = Math.min(income, slab.limit) - prevLimit;
-                    tax += amt * slab.rate;
-                    prevLimit = slab.limit;
-                } else break;
-            }
-            if (r === 'new') {
-                if (income <= 700000) return 0;
-            } else {
-                if (income <= 500000) return 0;
-            }
-            return tax * 1.04;
-        };
-
-        const taxNew = calculateTax(taxableNew, 'new');
-        const taxOld = calculateTax(taxableOld, 'old');
-        const finalTax = regime === 'new' ? taxNew : taxOld;
-
-        // 8. Monthly View
-        const monthlyGross = (annualGross - valBonus) / 12;
-        const monthlyPF = valEePF / 12;
-        const monthlyTax = finalTax / 12;
-        const monthlyInHand = monthlyGross - monthlyPF - monthlyPT - monthlyTax;
-
-        const annualNet = annualGross - valEePF - annualPT - finalTax;
-
-        return {
-            reconciledCTC, ctcVariance, safeCtcInput,
-            valBasic, valHRA, valSpecial, valBonus,
-            ghostTotal, valEmpPF, valGratuity, annualGross, finalTax,
-            monthlyGross, monthlyPF, monthlyPT, annualPT, monthlyTax, monthlyInHand,
-            taxNew, taxOld, rentExemption, taxableNew, taxableOld,
-            annualNet, valEePF,
-            valAdmin
-        };
-
+        return calculateSalary({
+            ctcInput,
+            regime,
+            config,
+            overrides,
+            oneOffs,
+            savers
+        });
     }, [ctcInput, config, overrides, savers, oneOffs, regime]);
 
 
@@ -502,9 +406,9 @@ export default function InHandSalaryCalculator() {
                                 <span className="font-bold text-red-800 text-xs uppercase tracking-wide">Total Tax (inc. Cess)</span>
                                 <span className="font-mono font-bold text-lg text-red-600">{toINR(calc.finalTax)}</span>
                             </div>
-                            {regime === 'new' && calc.taxableNew <= 700000 && (
+                            {regime === 'new' && calc.taxableNew <= 1200000 && (
                                 <div className="bg-emerald-50 text-emerald-700 text-xs p-3 rounded-xl mt-2 text-center font-bold border border-emerald-100 flex items-center justify-center gap-2">
-                                    <span className="text-lg">🎉</span> Zero Tax under New Regime (Taxable Income ≤ ₹7L)
+                                    <span className="text-lg">🎉</span> Zero Tax under New Regime (Taxable Income ≤ ₹12L)
                                 </div>
                             )}
                         </div>

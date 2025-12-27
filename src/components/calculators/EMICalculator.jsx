@@ -7,52 +7,19 @@ import {
 import { MoneyInput } from '../ui/MoneyInput';
 import { toINR, parseMoney } from '../../utils/formatters';
 
+import { calculateEMI } from '../../utils/calculators/emi';
+
 export default function EMICalculator() {
     const [loanAmount, setLoanAmount] = useState(5000000);
     const [interestRate, setInterestRate] = useState(8.5);
     const [tenureYears, setTenureYears] = useState(20);
 
     const calc = useMemo(() => {
-        const p = parseMoney(loanAmount);
-        const r = interestRate / 12 / 100;
-        const n = tenureYears * 12;
-
-        if (p === 0 || n === 0) return { emi: 0, totalInterest: 0, totalAmount: 0, schedule: [] };
-
-        // EMI Formula
-        const emi = (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-
-        const totalAmount = emi * n;
-        const totalInterest = totalAmount - p;
-
-        // Amortization Schedule (Yearly summary)
-        let balance = p;
-        let schedule = [];
-        let yearlyInterest = 0;
-        let yearlyPrincipal = 0;
-
-        for (let m = 1; m <= n; m++) {
-            const interestForMonth = balance * r;
-            const principalForMonth = emi - interestForMonth;
-            balance -= principalForMonth;
-            if (balance < 0) balance = 0;
-
-            yearlyInterest += interestForMonth;
-            yearlyPrincipal += principalForMonth;
-
-            if (m % 12 === 0 || m === n) {
-                schedule.push({
-                    year: Math.ceil(m / 12),
-                    interest: yearlyInterest,
-                    principal: yearlyPrincipal,
-                    balance: balance
-                });
-                yearlyInterest = 0;
-                yearlyPrincipal = 0;
-            }
-        }
-
-        return { emi, totalInterest, totalAmount, schedule };
+        return calculateEMI({
+            loanAmount: parseMoney(loanAmount),
+            interestRate,
+            tenureYears
+        });
     }, [loanAmount, interestRate, tenureYears]);
 
     return (

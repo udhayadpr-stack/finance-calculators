@@ -8,6 +8,8 @@ import { MoneyInput } from '../ui/MoneyInput';
 import { toINR, parseMoney } from '../../utils/formatters';
 import clsx from 'clsx';
 
+import { calculateMF } from '../../utils/calculators/mf';
+
 export default function MFCalculator() {
     const [type, setType] = useState('sip'); // sip | lumpsum
     const [amount, setAmount] = useState(5000);
@@ -15,37 +17,12 @@ export default function MFCalculator() {
     const [years, setYears] = useState(10);
 
     const calc = useMemo(() => {
-        const p = parseMoney(amount);
-        const r = rate / 100;
-        const n = years * 12; // months
-
-        // Monthly rate
-        const i = r / 12;
-
-        let invested = 0;
-        let estReturns = 0;
-        let totalValue = 0;
-
-        if (type === 'sip') {
-            // SIP Formula: M = P × ({[1 + i]^n - 1} / i) × (1 + i)
-            invested = p * n;
-            if (i === 0) {
-                totalValue = invested;
-            } else {
-                totalValue = p * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
-            }
-        } else {
-            // Lumpsum Formula: M = P * (1 + r)^N (Annual Compounding usually) or Monthly?
-            // Standard generic calculators often use annual compounding for Lumpsum, monthly for SIP.
-            // But to be precise, let's use Annual Compounding for Lumpsum as is standard.
-            invested = p;
-            // FV = P * (1 + r)^n_years
-            totalValue = p * Math.pow(1 + r, years);
-        }
-
-        estReturns = totalValue - invested;
-
-        return { invested, estReturns, totalValue };
+        return calculateMF({
+            type,
+            amount: parseMoney(amount),
+            rate,
+            years
+        });
     }, [type, amount, rate, years]);
 
     return (

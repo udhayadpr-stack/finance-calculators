@@ -2,56 +2,26 @@ import { useState, useMemo } from 'react';
 import { Award, Info, Briefcase } from 'lucide-react';
 import { MoneyInput } from '../ui/MoneyInput';
 import { toINR, parseMoney } from '../../utils/formatters';
+import clsx from 'clsx';
+
+import { calculateGratuity } from '../../utils/calculators/gratuity';
 
 export default function GratuityCalculator() {
     const [basicPay, setBasicPay] = useState(40000); // Basic + DA
     const [totalCTC, setTotalCTC] = useState(100000); // Monthly CTC
     const [years, setYears] = useState(5);
     const [isGovt, setIsGovt] = useState(false); // Toggle for Govt/Private
+    const [isFixedTerm, setIsFixedTerm] = useState(false);
 
     const calc = useMemo(() => {
-        // Rule: Gratuity = number_of_years * 15/26 * (Higher of Basic+DA OR 50% of CTC)
-        // Code on Wages (Effective Nov 2025) mandates Basic >= 50% CTC for social security.
-
-        const salaryInput = parseMoney(basicPay);
-        const ctcInput = parseMoney(totalCTC);
-
-        // Derived Wage Basis
-        const wageBasis = Math.max(salaryInput, ctcInput * 0.5);
-        const isWageIncreased = wageBasis > salaryInput;
-
-        const n = Math.round(years);
-
-        // Limits: Fully exempt for Govt, 20L for Private (as of FY 2025-26)
-        const TAX_FREE_LIMIT = isGovt ? Infinity : 2000000;
-
-        if (n < 5) { // Fixed Term employees might be eligible earlier, but standard rule is 5
-            return {
-                payable: 0,
-                eligible: false,
-                taxExempt: 0,
-                taxable: 0,
-                limit: TAX_FREE_LIMIT,
-                wageBasis
-            };
-        }
-
-        const gratuity = (wageBasis * 15 * n) / 26;
-
-        const exempt = Math.min(gratuity, TAX_FREE_LIMIT);
-        const taxable = Math.max(0, gratuity - exempt);
-
-        return {
-            payable: gratuity,
-            eligible: true,
-            taxExempt: exempt,
-            taxable: taxable,
-            limit: TAX_FREE_LIMIT,
-            wageBasis,
-            isWageIncreased
-        };
-
-    }, [basicPay, totalCTC, years, isGovt]);
+        return calculateGratuity({
+            basicPay: parseMoney(basicPay),
+            totalCTC: parseMoney(totalCTC),
+            years,
+            isGovt,
+            isFixedTerm
+        });
+    }, [basicPay, totalCTC, years, isGovt, isFixedTerm]);
 
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
@@ -72,12 +42,26 @@ export default function GratuityCalculator() {
                     </div>
 
                     {/* Employee Type Toggle */}
-                    <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-200/60">
-                        <button onClick={() => setIsGovt(false)} className={`flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all ${!isGovt ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}>Private Sector</button>
-                        <button onClick={() => setIsGovt(true)} className={`flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all ${isGovt ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}>Govt. Employee</button>
+                    <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-200/60 mb-4">
+                        <button onClick={() => setIsGovt(false)} className={clsx("flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all", !isGovt ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600')}>Private Sector</button>
+                        <button onClick={() => setIsGovt(true)} className={clsx("flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all", isGovt ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600')}>Govt. Employee</button>
                     </div>
 
-                    <div className="space-y-6">
+                    {/* Fixed Term Toggle */}
+                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="space-y-0.5">
+                            <span className="block text-xs font-bold text-gray-600">Fixed Term Employment?</span>
+                            <span className="block text-[10px] text-gray-400">Lowers eligibility to 1 year</span>
+                        </div>
+                        <button
+                            onClick={() => setIsFixedTerm(!isFixedTerm)}
+                            className={clsx("w-11 h-6 rounded-full transition-colors relative", isFixedTerm ? "bg-amber-500" : "bg-gray-300")}
+                        >
+                            <span className={clsx("absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm", isFixedTerm ? "translate-x-5" : "translate-x-0")} />
+                        </button>
+                    </div>
+
+                    <div className="space-y-6 pt-4">
                         <MoneyInput
                             label="Monthly Basic + DA"
                             value={basicPay}
@@ -113,7 +97,7 @@ export default function GratuityCalculator() {
                             {!calc.eligible && (
                                 <div className="mt-4 text-xs text-rose-600 font-bold flex items-center gap-2 bg-rose-50 p-3 rounded-xl border border-rose-100">
                                     <Info className="w-4 h-4" />
-                                    Minimum 5 years required for eligibility
+                                    Minimum {isFixedTerm ? '1 year' : '5 years'} required for eligibility
                                 </div>
                             )}
                         </div>
@@ -125,6 +109,11 @@ export default function GratuityCalculator() {
             <div className="lg:col-span-7 space-y-6">
                 {/* Main Result Card */}
                 <div className="bg-gradient-to-br from-primary to-violet-700 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden group">
+                    {/* Result content same as before ... keeping it short for edit */}
+                    {/* Use existing content for this block if possible? No I have to replace huge chunk. */}
+                    {/* ... I will copy paste the result card content from view_file logic above but usually I shouldn't replace if unchanged. */}
+                    {/* To avoid massive replacement, I will split this into two calls? No, multi_replace can work. */}
+                    {/* The TargetContent covers Lines 44 to 91 in one go. */}
                     {/* Background Pattern */}
                     <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
                     <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
@@ -166,6 +155,37 @@ export default function GratuityCalculator() {
                         </div>
                     </div>
                 </div>
+
+                {/* Visual Breakdown */}
+                {calc.payable > 0 && (
+                    <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-100/50 backdrop-blur-xl flex items-center justify-center min-h-[180px]">
+                        <div className="w-full max-w-xl space-y-6">
+                            <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">
+                                <span>Tax Breakdown</span>
+                            </div>
+                            <div className="relative h-14 w-full bg-slate-50 rounded-full overflow-hidden flex shadow-inner ring-1 ring-slate-100">
+                                <div
+                                    style={{ width: `${(calc.taxExempt / calc.payable) * 100}%` }}
+                                    className="h-full bg-emerald-500 flex items-center justify-center text-white font-bold text-[10px] md:text-xs relative group"
+                                >
+                                    <span className="drop-shadow-md z-10 whitespace-nowrap px-1">Tax Free</span>
+                                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent"></div>
+                                </div>
+                                <div
+                                    style={{ width: `${(calc.taxable / calc.payable) * 100}%` }}
+                                    className="h-full bg-slate-400 flex items-center justify-center text-white font-bold text-[10px] md:text-xs relative group"
+                                >
+                                    <span className={clsx("drop-shadow-md z-10 whitespace-nowrap px-1", (calc.taxable / calc.payable) < 0.1 ? "hidden group-hover:block" : "block")}>Taxable</span>
+                                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent"></div>
+                                </div>
+                            </div>
+                            <div className="flex justify-between text-[10px] md:text-xs font-bold text-gray-600 pt-2 border-t border-gray-100 flex-wrap gap-2">
+                                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></div> Exempt: {Math.round((calc.taxExempt / calc.payable) * 100)}%</div>
+                                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-slate-400 shadow-sm"></div> Taxable: {Math.round((calc.taxable / calc.payable) * 100)}%</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
