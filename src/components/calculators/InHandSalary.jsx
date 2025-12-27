@@ -4,6 +4,7 @@ import {
     RefreshCw, AlertTriangle, HelpCircle, ChevronDown, ChevronUp, Settings, MapPin, Info, TrendingUp
 } from 'lucide-react';
 import { MoneyInput } from '../ui/MoneyInput';
+import { ResultCard } from '../ui/ResultCard';
 import { toINR, parseMoney } from '../../utils/formatters';
 
 
@@ -11,13 +12,13 @@ import { toINR, parseMoney } from '../../utils/formatters';
 // --- SUB COMPONENTS ---
 const Row = ({ label, val, color }) => (
     <div className="flex justify-between items-center text-sm">
-        <span className="text-gray-500">{label}</span>
-        <span className={`font-mono font-medium ${color || 'text-gray-900'}`}>{val}</span>
+        <span className="text-gray-500 dark:text-gray-400">{label}</span>
+        <span className={`font-mono font-medium ${color || 'text-gray-900 dark:text-gray-100'}`}>{val}</span>
     </div>
 );
 
 const SlipRow = ({ label, val, highlight }) => (
-    <div className={`flex justify-between items-center px-5 py-3 ${highlight ? 'bg-indigo-50/20 text-indigo-900 font-medium' : 'text-gray-600'}`}>
+    <div className={`flex justify-between items-center px-5 py-3 ${highlight ? 'bg-indigo-50/20 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-200 font-medium' : 'text-gray-600 dark:text-gray-400'}`}>
         <span>{label}</span>
         <span className="font-mono">{toINR(val)}</span>
     </div>
@@ -121,17 +122,17 @@ export default function InHandSalaryCalculator() {
             <div className="lg:col-span-5 space-y-6">
 
                 {/* 1. MASTER INPUT */}
-                <div className="bg-white p-6 rounded-3xl border border-white/40 shadow-xl shadow-slate-200/50 backdrop-blur-xl relative overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-white/40 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 backdrop-blur-xl relative overflow-hidden transition-colors">
                     <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
 
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900 tracking-tight">Annual CTC</h2>
-                            <p className="text-xs text-gray-500 font-medium">Enter your total Cost to Company</p>
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Annual CTC</h2>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Enter your total Cost to Company</p>
                         </div>
-                        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/60">
-                            <button onClick={() => setRegime('new')} className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded-lg transition-all ${regime === 'new' ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}>New Regime</button>
-                            <button onClick={() => setRegime('old')} className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded-lg transition-all ${regime === 'old' ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}>Old Regime</button>
+                        <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl border border-slate-200/60 dark:border-slate-600">
+                            <button onClick={() => setRegime('new')} className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded-lg transition-all ${regime === 'new' ? 'bg-white dark:bg-slate-600 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}>New Regime</button>
+                            <button onClick={() => setRegime('old')} className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded-lg transition-all ${regime === 'old' ? 'bg-white dark:bg-slate-600 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}>Old Regime</button>
                         </div>
                     </div>
 
@@ -147,13 +148,13 @@ export default function InHandSalaryCalculator() {
                     <div className="flex flex-wrap gap-3">
                         <button
                             onClick={() => setConfig(p => ({ ...p, pfCapped: false }))}
-                            className={`px-4 py-2 rounded-xl border text-[10px] font-bold uppercase transition-all ${!config.pfCapped ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border-slate-200 text-gray-500 hover:border-indigo-200 hover:text-indigo-600'}`}
+                            className={`px-4 py-2 rounded-xl border text-[10px] font-bold uppercase transition-all ${!config.pfCapped ? 'bg-indigo-600 dark:bg-indigo-500 border-indigo-600 dark:border-indigo-500 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:border-indigo-200 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                         >
                             Actual PF (12%)
                         </button>
                         <button
                             onClick={() => setConfig(p => ({ ...p, pfCapped: true }))}
-                            className={`px-4 py-2 rounded-xl border text-[10px] font-bold uppercase transition-all ${config.pfCapped ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border-slate-200 text-gray-500 hover:border-indigo-200 hover:text-indigo-600'}`}
+                            className={`px-4 py-2 rounded-xl border text-[10px] font-bold uppercase transition-all ${config.pfCapped ? 'bg-indigo-600 dark:bg-indigo-500 border-indigo-600 dark:border-indigo-500 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:border-indigo-200 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                         >
                             Capped PF (₹1,800)
                         </button>
@@ -162,28 +163,28 @@ export default function InHandSalaryCalculator() {
 
                 {/* WARNING: CTC VARIANCE */}
                 {Math.abs(calc.ctcVariance) > 100 && (
-                    <div className="bg-amber-50 border border-amber-100 ring-1 ring-amber-200/50 text-amber-900 text-xs p-5 rounded-2xl flex items-start gap-4 shadow-sm">
-                        <div className="bg-amber-100 p-2 rounded-xl shrink-0"><AlertTriangle className="w-5 h-5 text-amber-600" /></div>
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 ring-1 ring-amber-200/50 dark:ring-amber-700/30 text-amber-900 dark:text-amber-100 text-xs p-5 rounded-2xl flex items-start gap-4 shadow-sm transition-colors">
+                        <div className="bg-amber-100 dark:bg-amber-800/40 p-2 rounded-xl shrink-0"><AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" /></div>
                         <div>
-                            <strong className="block mb-1 font-bold uppercase tracking-wider text-[10px] text-amber-700">Mismatch Detected</strong>
+                            <strong className="block mb-1 font-bold uppercase tracking-wider text-[10px] text-amber-700 dark:text-amber-400">Mismatch Detected</strong>
                             <p className="leading-relaxed opacity-90">
                                 {calc.ctcVariance > 0
                                     ? `Your components exceed the input by ${toINR(calc.ctcVariance)}.`
                                     : `Your components sum to ${toINR(Math.abs(calc.ctcVariance))} less than input.`}
                             </p>
-                            <div className="mt-2 text-[10px] font-semibold text-amber-600 bg-amber-100/50 inline-block px-2 py-1 rounded-md">Using calculated sum: {toINR(calc.reconciledCTC)}</div>
+                            <div className="mt-2 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-100/50 dark:bg-amber-900/30 inline-block px-2 py-1 rounded-md">Using calculated sum: {toINR(calc.reconciledCTC)}</div>
                         </div>
                     </div>
                 )}
 
                 {/* 2. STRUCTURE CONFIG */}
-                <div className="bg-white rounded-3xl border border-slate-200/60 shadow-xl shadow-slate-100/50 overflow-hidden backdrop-blur-xl">
-                    <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-sm">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/60 dark:border-slate-700 shadow-xl shadow-slate-100/50 dark:shadow-slate-900/50 overflow-hidden backdrop-blur-xl transition-colors">
+                    <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50/80 dark:bg-slate-900/80 backdrop-blur-sm">
                         <div className="flex items-center gap-2">
-                            <Settings className="w-4 h-4 text-indigo-500" />
-                            <h3 className="text-sm font-bold text-gray-800">Earnings & Structure</h3>
+                            <Settings className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">Earnings & Structure</h3>
                         </div>
-                        <button onClick={handleReset} className="text-[10px] text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 font-bold uppercase tracking-wider bg-indigo-50 px-2 py-1 rounded-lg transition-colors border border-indigo-100">
+                        <button onClick={handleReset} className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1.5 font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg transition-colors border border-indigo-100 dark:border-indigo-800">
                             <RefreshCw className="w-3 h-3" /> Reset
                         </button>
                     </div>
@@ -191,9 +192,9 @@ export default function InHandSalaryCalculator() {
                     <div className="p-6 space-y-6">
                         <div className="space-y-6">
                             <div>
-                                <div className="flex justify-between text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 px-1">
-                                    <span>Basic Ratio: <span className="text-indigo-600">{config.basicRatio}%</span></span>
-                                    {overrides.basic !== undefined && <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md ring-1 ring-amber-100">Manual Override</span>}
+                                <div className="flex justify-between text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-1">
+                                    <span>Basic Ratio: <span className="text-indigo-600 dark:text-indigo-400">{config.basicRatio}%</span></span>
+                                    {overrides.basic !== undefined && <span className="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-md ring-1 ring-amber-100 dark:ring-amber-800">Manual Override</span>}
                                 </div>
                                 <input
                                     type="range"
@@ -201,7 +202,7 @@ export default function InHandSalaryCalculator() {
                                     value={config.basicRatio}
                                     onChange={(e) => setConfig({ ...config, basicRatio: parseInt(e.target.value) })}
                                     disabled={overrides.basic !== undefined}
-                                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer transition-all ${overrides.basic !== undefined ? 'bg-gray-100' : 'bg-gray-200 accent-indigo-600 hover:accent-indigo-500'}`}
+                                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer transition-all ${overrides.basic !== undefined ? 'bg-gray-100 dark:bg-slate-700' : 'bg-gray-200 dark:bg-slate-600 accent-indigo-600 dark:accent-indigo-500 hover:accent-indigo-500'}`}
                                 />
                             </div>
 
@@ -212,7 +213,7 @@ export default function InHandSalaryCalculator() {
                                     <MoneyInput label="HRA" value={calc.valHRA} onChange={(v) => handleOverride('hra', v)} isManual={overrides.hra !== undefined} onToggleMode={() => toggleMode('hra')} />
                                     <button
                                         onClick={() => setConfig(p => ({ ...p, metro: !p.metro }))}
-                                        className={`mt-2 w-full text-[10px] py-1.5 rounded-xl border flex items-center justify-center gap-1.5 transition-all ${config.metro ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-bold shadow-sm' : 'bg-slate-50 border-slate-100 text-gray-400 hover:bg-white hover:border-gray-300'}`}
+                                        className={`mt-2 w-full text-[10px] py-1.5 rounded-xl border flex items-center justify-center gap-1.5 transition-all ${config.metro ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold shadow-sm' : 'bg-slate-50 dark:bg-slate-900/30 border-slate-100 dark:border-slate-700 text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-slate-800 hover:border-gray-300 dark:hover:border-slate-600'}`}
                                     >
                                         <MapPin className="w-3 h-3" /> {config.metro ? "Metro (50%)" : "Non-Metro (40%)"}
                                     </button>
@@ -226,18 +227,18 @@ export default function InHandSalaryCalculator() {
                 </div>
 
                 {/* 3. DEDUCTIONS & ADVANCED */}
-                <div className="bg-white rounded-3xl border border-slate-200/60 shadow-xl shadow-slate-100/50 overflow-hidden backdrop-blur-xl">
-                    <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/80 backdrop-blur-sm flex justify-between items-center">
-                        <h3 className="text-sm font-bold text-gray-800">Deductions & Benefits</h3>
-                        <button onClick={() => setShowAdvanced(!showAdvanced)} className={`text-[10px] px-2 py-1 rounded-lg border transition-all flex items-center gap-1.5 font-bold uppercase tracking-wider ${showAdvanced ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}>
+                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/60 dark:border-slate-700 shadow-xl shadow-slate-100/50 dark:shadow-slate-900/50 overflow-hidden backdrop-blur-xl transition-colors">
+                    <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50/80 dark:bg-slate-900/80 backdrop-blur-sm flex justify-between items-center">
+                        <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">Deductions & Benefits</h3>
+                        <button onClick={() => setShowAdvanced(!showAdvanced)} className={`text-[10px] px-2 py-1 rounded-lg border transition-all flex items-center gap-1.5 font-bold uppercase tracking-wider ${showAdvanced ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-slate-600 hover:border-gray-300'}`}>
                             <Settings className="w-3 h-3" /> Advanced
                         </button>
                     </div>
 
                     {showAdvanced && (
-                        <div className="bg-slate-50 border-b border-gray-100 px-6 py-3 text-xs flex gap-4 items-center animate-in slide-in-from-top-1">
-                            <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 font-medium">
-                                <input type="checkbox" checked={config.includeAdminCharges} onChange={(e) => setConfig({ ...config, includeAdminCharges: e.target.checked })} className="rounded text-indigo-600 focus:ring-0 w-4 h-4 border-gray-300" />
+                        <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-700 px-6 py-3 text-xs flex gap-4 items-center animate-in slide-in-from-top-1 transition-colors">
+                            <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 dark:text-gray-300 font-medium">
+                                <input type="checkbox" checked={config.includeAdminCharges} onChange={(e) => setConfig({ ...config, includeAdminCharges: e.target.checked })} className="rounded text-indigo-600 focus:ring-0 w-4 h-4 border-gray-300 dark:border-slate-600 dark:bg-slate-800" />
                                 Include PF Admin Charges (0.65%)
                             </label>
                         </div>
@@ -256,8 +257,8 @@ export default function InHandSalaryCalculator() {
 
                         {regime === 'old' && (
                             <>
-                                <div className="col-span-2 mt-2 pt-4 border-t border-dashed border-gray-200 text-[10px] font-bold text-indigo-600 uppercase tracking-widest text-center flex items-center justify-center gap-2">
-                                    <span className="h-px w-8 bg-indigo-100"></span> Old Regime Tax Savers <span className="h-px w-8 bg-indigo-100"></span>
+                                <div className="col-span-2 mt-2 pt-4 border-t border-dashed border-gray-200 dark:border-slate-700 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest text-center flex items-center justify-center gap-2 transition-colors">
+                                    <span className="h-px w-8 bg-indigo-100 dark:bg-indigo-900"></span> Old Regime Tax Savers <span className="h-px w-8 bg-indigo-100 dark:bg-indigo-900"></span>
                                 </div>
                                 <MoneyInput label="Rent Paid (Yr)" value={savers.rent} onChange={(v) => setSavers({ ...savers, rent: v })} isManual={true} showToggle={false} />
                                 <MoneyInput label="80C (LIC/PPF)" value={savers.sec80c} onChange={(v) => setSavers({ ...savers, sec80c: v })} isManual={true} showToggle={false} />
@@ -275,7 +276,7 @@ export default function InHandSalaryCalculator() {
 
                 {/* 1. HERO CARD */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-xl shadow-indigo-200 flex flex-col justify-between relative overflow-hidden group">
+                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-xl shadow-indigo-200 dark:shadow-indigo-900/20 flex flex-col justify-between relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-6 opacity-10"><Building2 className="w-24 h-24 transform rotate-12" /></div>
 
                         <div className="relative z-10">
@@ -299,115 +300,115 @@ export default function InHandSalaryCalculator() {
                         <div className="absolute -left-10 -top-10 w-40 h-40 bg-indigo-400/20 rounded-full blur-3xl"></div>
                     </div>
 
-                    <div className="bg-white rounded-3xl p-6 border border-slate-200/60 shadow-xl shadow-slate-100/50 flex flex-col justify-center gap-4 relative overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-700 shadow-xl shadow-slate-100/50 dark:shadow-slate-900/50 flex flex-col justify-center gap-4 relative overflow-hidden transition-colors">
                         <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-red-400 via-amber-400 to-gray-400"></div>
-                        <div className="flex justify-between items-center pb-3 border-b border-gray-100 px-2">
-                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Monthly Deductions</span>
+                        <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-slate-700 px-2">
+                            <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Monthly Deductions</span>
                         </div>
                         <div className="space-y-4 px-2">
-                            <Row label="Income Tax (Avg)" val={toINR(calc.monthlyTax)} color="text-red-500" />
-                            <Row label="PF (Your Share)" val={toINR(calc.monthlyPF)} color="text-amber-600" />
-                            <Row label="Professional Tax" val={toINR(calc.monthlyPT)} color="text-gray-600" />
+                            <Row label="Income Tax (Avg)" val={toINR(calc.monthlyTax)} color="text-red-500 dark:text-red-400" />
+                            <Row label="PF (Your Share)" val={toINR(calc.monthlyPF)} color="text-amber-600 dark:text-amber-400" />
+                            <Row label="Professional Tax" val={toINR(calc.monthlyPT)} color="text-gray-600 dark:text-gray-400" />
                         </div>
                     </div>
                 </div>
 
                 {/* 2. WATERFALL CHART */}
-                <div className="bg-white rounded-3xl p-8 border border-slate-200/60 shadow-xl shadow-slate-100/50">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200/60 dark:border-slate-700 shadow-xl shadow-slate-100/50 dark:shadow-slate-900/50 transition-colors">
                     <div className="flex justify-between items-center mb-8">
                         <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-gray-100 rounded-lg">
-                                <TrendingUp className="w-4 h-4 text-gray-600" />
+                            <div className="p-1.5 bg-gray-100 dark:bg-slate-700 rounded-lg">
+                                <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                             </div>
-                            <h3 className="text-sm font-bold text-gray-800">Salary Waterfall</h3>
+                            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">Salary Waterfall</h3>
                         </div>
-                        <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2.5 py-1 rounded-lg border border-slate-200">ANNUAL VIEW</span>
+                        <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-600">ANNUAL VIEW</span>
                     </div>
                     <div className="flex items-end h-48 gap-3 sm:gap-6 text-xs font-bold text-center px-4">
-                        <Bar height="100%" color="bg-slate-200" val={toINR(calc.reconciledCTC)} label="CTC" />
-                        <div className="pb-8 text-gray-300 hidden sm:block"><ChevronDown className="w-5 h-5" /></div>
+                        <Bar height="100%" color="bg-slate-200 dark:bg-slate-700" val={toINR(calc.reconciledCTC)} label="CTC" txtColor="text-gray-900 dark:text-gray-100" />
+                        <div className="pb-8 text-gray-300 dark:text-slate-600 hidden sm:block"><ChevronDown className="w-5 h-5" /></div>
                         <Bar
                             height={`${calc.reconciledCTC > 0 ? (calc.annualNet / calc.reconciledCTC) * 100 : 0}%`}
                             color="bg-emerald-500"
                             val={toINR(calc.annualNet)}
                             label="Net Pay"
-                            txtColor="text-emerald-600"
+                            txtColor="text-emerald-600 dark:text-emerald-400"
                         />
                         <Bar
                             height={`${calc.reconciledCTC > 0 ? (calc.finalTax / calc.reconciledCTC) * 100 : 0}%`}
                             color="bg-red-500"
                             val={toINR(calc.finalTax)}
                             label="Tax"
-                            txtColor="text-red-500"
+                            txtColor="text-red-500 dark:text-red-400"
                         />
                         <Bar
                             height={`${calc.reconciledCTC > 0 ? ((calc.valEePF + calc.ghostTotal) / calc.reconciledCTC) * 100 : 0}%`}
                             color="bg-amber-500"
                             val={toINR(calc.valEePF + calc.ghostTotal)}
                             label="Benefits"
-                            txtColor="text-amber-500"
+                            txtColor="text-amber-500 dark:text-amber-400"
                         />
                     </div>
                 </div>
 
                 {/* 3. TAX EXPLANATION DRAWER */}
-                <div className="bg-white rounded-3xl border border-slate-200/60 shadow-xl shadow-slate-100/50 overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/60 dark:border-slate-700 shadow-xl shadow-slate-100/50 dark:shadow-slate-900/50 overflow-hidden transition-colors">
                     <button
                         onClick={() => setShowExplanation(!showExplanation)}
-                        className="w-full flex items-center justify-between p-5 bg-slate-50 hover:bg-slate-100 transition-colors group"
+                        className="w-full flex items-center justify-between p-5 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
                     >
-                        <div className="flex items-center gap-3 text-xs font-bold text-indigo-600 uppercase tracking-widest group-hover:text-indigo-700">
-                            <div className="bg-white p-1 rounded-md shadow-sm border border-slate-200 group-hover:border-indigo-200">
+                        <div className="flex items-center gap-3 text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
+                            <div className="bg-white dark:bg-slate-800 p-1 rounded-md shadow-sm border border-slate-200 dark:border-slate-700 group-hover:border-indigo-200 dark:group-hover:border-indigo-500/50">
                                 <HelpCircle className="w-4 h-4" />
                             </div>
                             Explain {regime === 'new' ? 'New' : 'Old'} Regime Tax
                         </div>
-                        {showExplanation ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-indigo-500" /> : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-indigo-500" />}
+                        {showExplanation ? <ChevronUp className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400" /> : <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400" />}
                     </button>
 
                     {showExplanation && (
-                        <div className="p-6 bg-white border-t border-slate-100 space-y-4 text-sm animate-in slide-in-from-top-2 duration-200">
-                            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-100">
+                        <div className="p-6 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700 space-y-4 text-sm animate-in slide-in-from-top-2 duration-200">
+                            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-100 dark:border-slate-700">
                                 <div>
-                                    <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 block mb-1">Gross Salary</span>
-                                    <span className="font-bold text-gray-900">{toINR(calc.annualGross)}</span>
+                                    <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 block mb-1">Gross Salary</span>
+                                    <span className="font-bold text-gray-900 dark:text-gray-100">{toINR(calc.annualGross)}</span>
                                 </div>
                                 <div>
-                                    <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 block mb-1">Standard Ded.</span>
-                                    <span className="font-bold text-emerald-600">-{toINR(regime === 'new' ? 75000 : 50000)}</span>
+                                    <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 block mb-1">Standard Ded.</span>
+                                    <span className="font-bold text-emerald-600 dark:text-emerald-400">-{toINR(regime === 'new' ? 75000 : 50000)}</span>
                                 </div>
 
                                 {/* Show PT deduction only if it applies */}
                                 {calc.annualPT > 0 && (
                                     <div>
-                                        <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 block mb-1">Prof. Tax</span>
-                                        <span className="font-bold text-emerald-600">-{toINR(calc.annualPT)}</span>
+                                        <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 block mb-1">Prof. Tax</span>
+                                        <span className="font-bold text-emerald-600 dark:text-emerald-400">-{toINR(calc.annualPT)}</span>
                                     </div>
                                 )}
 
                                 {regime === 'old' && (
                                     <>
                                         <div>
-                                            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 block mb-1">HRA Exemption</span>
-                                            <span className="font-bold text-emerald-600">-{toINR(calc.rentExemption)}</span>
+                                            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 block mb-1">HRA Exemption</span>
+                                            <span className="font-bold text-emerald-600 dark:text-emerald-400">-{toINR(calc.rentExemption)}</span>
                                         </div>
                                         <div>
-                                            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 block mb-1">Sections</span>
-                                            <span className="font-bold text-emerald-600">-{toINR(savers.sec80c + savers.sec80d + savers.nps)}</span>
+                                            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 block mb-1">Sections</span>
+                                            <span className="font-bold text-emerald-600 dark:text-emerald-400">-{toINR(savers.sec80c + savers.sec80d + savers.nps)}</span>
                                         </div>
                                     </>
                                 )}
                             </div>
-                            <div className="flex justify-between items-center pt-2 p-3 bg-slate-50 rounded-xl">
-                                <span className="font-bold text-gray-600 text-xs uppercase tracking-wide">Taxable Income</span>
-                                <span className="font-mono font-bold text-lg text-gray-900">{toINR(regime === 'new' ? calc.taxableNew : calc.taxableOld)}</span>
+                            <div className="flex justify-between items-center pt-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl transition-colors">
+                                <span className="font-bold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Taxable Income</span>
+                                <span className="font-mono font-bold text-lg text-gray-900 dark:text-gray-100">{toINR(regime === 'new' ? calc.taxableNew : calc.taxableOld)}</span>
                             </div>
-                            <div className="flex justify-between items-center p-3 bg-red-50 rounded-xl border border-red-100">
-                                <span className="font-bold text-red-800 text-xs uppercase tracking-wide">Total Tax (inc. Cess)</span>
-                                <span className="font-mono font-bold text-lg text-red-600">{toINR(calc.finalTax)}</span>
+                            <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30 transition-colors">
+                                <span className="font-bold text-red-800 dark:text-red-200 text-xs uppercase tracking-wide">Total Tax (inc. Cess)</span>
+                                <span className="font-mono font-bold text-lg text-red-600 dark:text-red-300">{toINR(calc.finalTax)}</span>
                             </div>
                             {regime === 'new' && calc.taxableNew <= 1200000 && (
-                                <div className="bg-emerald-50 text-emerald-700 text-xs p-3 rounded-xl mt-2 text-center font-bold border border-emerald-100 flex items-center justify-center gap-2">
+                                <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-xs p-3 rounded-xl mt-2 text-center font-bold border border-emerald-100 dark:border-emerald-900/30 flex items-center justify-center gap-2 transition-colors">
                                     <span className="text-lg">🎉</span> Zero Tax under New Regime (Taxable Income ≤ ₹12L)
                                 </div>
                             )}
@@ -416,35 +417,35 @@ export default function InHandSalaryCalculator() {
                 </div>
 
                 {/* 4. PAYSLIP TABLE */}
-                <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200/60 overflow-hidden backdrop-blur-xl">
-                    <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 p-5 flex justify-between items-center">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200/60 dark:border-slate-700 overflow-hidden backdrop-blur-xl transition-colors">
+                    <div className="bg-gradient-to-r from-gray-50 to-white dark:from-slate-900 dark:to-slate-800/50 border-b border-gray-200 dark:border-slate-700 p-5 flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <div className="bg-white p-1.5 rounded-lg border border-gray-200 shadow-sm">
-                                <Building2 className="w-4 h-4 text-gray-500" />
+                            <div className="bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm">
+                                <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             </div>
-                            <div className="text-[11px] font-bold text-gray-700 uppercase tracking-widest">Payslip Preview</div>
+                            <div className="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest">Payslip Preview</div>
                         </div>
                         <div className="text-right">
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Net Payable</div>
-                            <div className="text-lg font-bold text-gray-900">{toINR(calc.monthlyInHand)}</div>
+                            <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Net Payable</div>
+                            <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{toINR(calc.monthlyInHand)}</div>
                         </div>
                     </div>
                     <div className="flex flex-col md:flex-row text-xs">
-                        <div className="flex-1 border-b md:border-b-0 md:border-r border-gray-200">
-                            <div className="bg-emerald-50/50 px-5 py-3 font-bold text-emerald-800 uppercase tracking-widest border-b border-emerald-100/50 flex items-center gap-2">
+                        <div className="flex-1 border-b md:border-b-0 md:border-r border-gray-200 dark:border-slate-700">
+                            <div className="bg-emerald-50/50 dark:bg-emerald-900/10 px-5 py-3 font-bold text-emerald-800 dark:text-emerald-200 uppercase tracking-widest border-b border-emerald-100/50 dark:border-emerald-900/20 flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Earnings
                             </div>
-                            <div className="divide-y divide-gray-50">
+                            <div className="divide-y divide-gray-50 dark:divide-slate-700/50">
                                 <SlipRow label="Basic Salary" val={calc.valBasic / 12} />
                                 <SlipRow label="HRA" val={calc.valHRA / 12} />
                                 <SlipRow label="Special Allowance" val={calc.valSpecial / 12} highlight />
                             </div>
                         </div>
                         <div className="flex-1">
-                            <div className="bg-red-50/50 px-5 py-3 font-bold text-red-800 uppercase tracking-widest border-b border-red-100/50 flex items-center gap-2">
+                            <div className="bg-red-50/50 dark:bg-red-900/10 px-5 py-3 font-bold text-red-800 dark:text-red-200 uppercase tracking-widest border-b border-red-100/50 dark:border-red-900/20 flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div> Deductions
                             </div>
-                            <div className="divide-y divide-gray-50">
+                            <div className="divide-y divide-gray-50 dark:divide-slate-700/50">
                                 <SlipRow label="PF Contribution" val={calc.monthlyPF} />
                                 <SlipRow label="Professional Tax" val={calc.monthlyPT} />
                                 <SlipRow label="Income Tax" val={calc.monthlyTax} highlight />
@@ -452,8 +453,8 @@ export default function InHandSalaryCalculator() {
                         </div>
                     </div>
                     {calc.valBonus > 0 && (
-                        <div className="bg-gray-50/50 border-t border-gray-200 p-4 text-xs flex justify-between text-gray-600">
-                            <span className="font-bold flex items-center gap-2"><div className="bg-gray-200 p-0.5 rounded-full"><Info className="w-3 h-3 text-gray-500" /></div> Annual Bonus Excluded</span>
+                        <div className="bg-gray-50/50 dark:bg-slate-900/50 border-t border-gray-200 dark:border-slate-700 p-4 text-xs flex justify-between text-gray-600 dark:text-gray-400 transition-colors">
+                            <span className="font-bold flex items-center gap-2"><div className="bg-gray-200 dark:bg-slate-700 p-0.5 rounded-full"><Info className="w-3 h-3 text-gray-500 dark:text-gray-400" /></div> Annual Bonus Excluded</span>
                             <span className="font-mono font-medium">{toINR(calc.valBonus)} / year</span>
                         </div>
                     )}

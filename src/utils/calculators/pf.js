@@ -62,12 +62,14 @@ export const calculatePF = ({
         let totalEmployerContribution = monthlyBasic * (employerContrRatio / 100);
 
         // EPS Calculation
-        // If basic > 15000, EPS is calculated on 15000 -> 1250
-        // If basic < 15000, EPS is 8.33% of basic
+        // EPS is 8.33% of Basic (capped at 15000)
         let epsBasis = Math.min(monthlyBasic, WAGE_CAP);
-        epsShare = epsBasis * 0.0833;
+        // Correct calculation: 8.33% of capped wage, max 1250
+        epsShare = Math.round(epsBasis * 0.0833);
 
         // EPF Employer = Total Employer Contribution - EPS
+        // Note: Employer Contribution is 12% of Actual Basic (not capped for contribution usually, unless opted)
+        // Ideally: (Basic * 12%) - EPS
         epfShareEmployer = totalEmployerContribution - epsShare;
 
         // Add to balance logic

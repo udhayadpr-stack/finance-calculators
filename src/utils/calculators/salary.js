@@ -3,12 +3,11 @@ import { parseMoney } from '../../utils/formatters';
 
 // --- CONSTANTS ---
 export const SLABS_NEW = [
-    { limit: 400000, rate: 0 },
-    { limit: 800000, rate: 0.05 },
-    { limit: 1200000, rate: 0.10 },
-    { limit: 1600000, rate: 0.15 },
-    { limit: 2000000, rate: 0.20 },
-    { limit: 2400000, rate: 0.25 },
+    { limit: 300000, rate: 0 },
+    { limit: 700000, rate: 0.05 },
+    { limit: 1000000, rate: 0.10 },
+    { limit: 1200000, rate: 0.15 },
+    { limit: 1500000, rate: 0.20 },
     { limit: Infinity, rate: 0.30 },
 ];
 
@@ -36,9 +35,10 @@ export const calculateTax = (income, regime) => {
     }
 
     // Rebate u/s 87A
-    // New Regime (FY 25-26): Taxable income <= 12L -> Nullify Tax
+    // New Regime (FY 25-26): Taxable income <= 7L -> Nullify Tax
+    // Note: Marginal relief is not implemented in this MVP but 7L is the hard cutoff for rebate eligibility.
     if (regime === 'new') {
-        if (income <= 1200000) return 0;
+        if (income <= 700000) return 0;
     }
     // Old Regime: Taxable income <= 5L -> Nullify Tax
     else {
