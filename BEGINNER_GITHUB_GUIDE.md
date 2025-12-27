@@ -13,6 +13,19 @@ We need to install the software that lets your computer talk to GitHub.
     *   Wait for it to finish and click **Finish**.
 4.  **Restart**: **Close this VS Code window completely and open it again.** This is important so VS Code can "see" the new Git styling.
 
+## Step 2: Configure Git (One-time Setup)
+Since this is your first time using Git, you need to tell it who you are.
+
+1.  Open the **Terminal** in VS Code (Press `Ctrl` + `~`).
+2.  Type the following command (replace with your email) and press **Enter**:
+    ```bash
+    git config --global user.email "you@example.com"
+    ```
+3.  Type the following command (replace with your name) and press **Enter**:
+    ```bash
+    git config --global user.name "Your Name"
+    ```
+
 ## Step 2: Create a Repository on GitHub
 1.  Go to [github.com](https://github.com/) and sign in (or create an account).
 2.  Look for a **+** icon in the top-right corner and select **New repository**.
