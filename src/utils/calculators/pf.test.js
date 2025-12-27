@@ -38,7 +38,7 @@ describe('PF Calculator Logic', () => {
         // Instead, let's verify calculation for 1 year tenure.
 
         const result = calculatePF({
-            basicPay: 50000,
+            basicPay: basic,
             currentAge: 57,
             retirementAge: 58,
             currentBalance: 0,
@@ -62,7 +62,7 @@ describe('PF Calculator Logic', () => {
         // Employer EPF: (10000 * 0.12) - 833 = 1200 - 833 = 367
 
         const result = calculatePF({
-            basicPay: 10000,
+            basicPay: basic,
             currentAge: 57,
             retirementAge: 58,
             currentBalance: 0,

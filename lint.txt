@@ -1,0 +1,49 @@
+
+> finance-calculators@0.0.0 lint
+> eslint .
+
+
+C:\Users\Udhaya T-VIN859\.gemini\antigravity\scratch\finance-calculators\src\App.jsx
+  22:29  error  'Icon' is defined but never used  no-unused-vars
+
+C:\Users\Udhaya T-VIN859\.gemini\antigravity\scratch\finance-calculators\src\components\calculators\InHandSalary.jsx
+  8:17  error  'parseMoney' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\Udhaya T-VIN859\.gemini\antigravity\scratch\finance-calculators\src\components\calculators\PFCalculator.jsx
+  10:17  error  'parseMoney' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                      no-unused-vars
+  25:32  error  'setEmployeeContrRatio' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  26:32  error  'setEmployerContrRatio' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\Udhaya T-VIN859\.gemini\antigravity\scratch\finance-calculators\src\components\ui\MoneyInput.jsx
+  23:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  21 |         if (!isFocused) {
+  22 |             // Allow decimals in display if present
+> 23 |             setDisplay(value !== undefined && value !== null ?
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |                 new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value)
+  25 |                 : '');
+  26 |         }  react-hooks/set-state-in-effect
+
+C:\Users\Udhaya T-VIN859\.gemini\antigravity\scratch\finance-calculators\src\utils\calculators\pf.js
+  1:10  error  'parseMoney' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\Udhaya T-VIN859\.gemini\antigravity\scratch\finance-calculators\src\utils\calculators\pf.test.js
+  20:15  error  'firstYear' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  32:15  error  'basic' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u      no-unused-vars
+  60:15  error  'basic' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u      no-unused-vars
+
+C:\Users\Udhaya T-VIN859\.gemini\antigravity\scratch\finance-calculators\src\utils\calculators\salary.js
+  2:10  error  'parseMoney' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\Udhaya T-VIN859\.gemini\antigravity\scratch\finance-calculators\tests\components\PFCalculator.test.jsx
+  1:26  error  'fireEvent' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+✖ 12 problems (12 errors, 0 warnings)
+
