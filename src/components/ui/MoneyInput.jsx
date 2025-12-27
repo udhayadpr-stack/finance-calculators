@@ -11,7 +11,8 @@ export const MoneyInput = ({
     onToggleMode,
     large,
     readOnlyMode,
-    showToggle = true
+    showToggle = true,
+    symbol = '₹'
 }) => {
     const [display, setDisplay] = useState('');
     const [isFocused, setIsFocused] = useState(false);
@@ -67,7 +68,7 @@ export const MoneyInput = ({
                 </div>
             )}
             <div className="relative">
-                <span className={clsx("absolute left-4 top-1/2 -translate-y-1/2 font-medium transition-colors pointer-events-none z-10", large ? 'text-2xl text-gray-400 group-focus-within:text-primary' : 'text-sm text-gray-400 group-focus-within:text-primary')}>₹</span>
+                <span className={clsx("absolute left-4 top-1/2 -translate-y-1/2 font-medium transition-colors pointer-events-none z-10", large ? 'text-2xl text-gray-400 group-focus-within:text-primary' : 'text-sm text-gray-400 group-focus-within:text-primary')}>{symbol}</span>
                 <input
                     id={id}
                     type="text"

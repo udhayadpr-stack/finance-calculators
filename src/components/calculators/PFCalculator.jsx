@@ -79,6 +79,7 @@ export default function PFCalculator() {
                                 placeholder="8.25"
                                 isManual
                                 showToggle={false}
+                                symbol="%"
                             />
                         </div>
 

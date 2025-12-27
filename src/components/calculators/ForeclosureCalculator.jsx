@@ -59,6 +59,7 @@ export default function ForeclosureCalculator() {
                                 onChange={setInterestRate}
                                 isManual
                                 showToggle={false}
+                                symbol="%"
                             />
                             <div className="space-y-2 group">
                                 <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest group-focus-within:text-primary transition-colors">Remaining Tenure</label>
