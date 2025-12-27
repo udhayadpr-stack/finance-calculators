@@ -59,8 +59,11 @@ export default function EMICalculator() {
                                 <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest group-focus-within:text-violet-600 dark:group-focus-within:text-violet-400 transition-colors">Tenure (Years)</label>
                                 <input
                                     type="number"
-                                    value={tenureYears}
-                                    onChange={e => setTenureYears(Number(e.target.value))}
+                                    value={tenureYears === 0 ? '' : tenureYears}
+                                    onChange={e => {
+                                        const val = e.target.value;
+                                        setTenureYears(val === '' ? 0 : Number(val));
+                                    }}
                                     className="w-full p-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl font-bold text-gray-900 dark:text-white outline-none focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 dark:focus:ring-violet-400/10 shadow-sm transition-all"
                                 />
                             </div>

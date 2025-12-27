@@ -34,15 +34,19 @@ export const calculateForeclosure = ({
     const interestIfContinued = Math.max(0, totalAmount - p);
 
     // 2. If foreclosed
-    const penalty = p * (penaltyPercent / 100);
-    const foreclosureCost = p + penalty;
+    const penaltyBase = p * (penaltyPercent / 100);
+    const gstOnPenalty = penaltyBase * 0.18;
+    const penaltyTotal = penaltyBase + gstOnPenalty;
+
+    const foreclosureCost = p + penaltyTotal;
 
     // 3. Difference
     const netSavings = totalAmount - foreclosureCost;
 
     return {
         foreclosureCost,
-        penalty,
+        penalty: penaltyTotal,
+        gst: gstOnPenalty,
         interestIfContinued,
         totalIfContinued: totalAmount,
         emi,

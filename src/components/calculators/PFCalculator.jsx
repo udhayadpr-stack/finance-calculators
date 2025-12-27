@@ -87,8 +87,11 @@ export default function PFCalculator() {
                                 <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Current Age</label>
                                 <input
                                     type="number"
-                                    value={currentAge}
-                                    onChange={e => setCurrentAge(Number(e.target.value))}
+                                    value={currentAge === 0 ? '' : currentAge}
+                                    onChange={e => {
+                                        const val = e.target.value;
+                                        setCurrentAge(val === '' ? 0 : Number(val));
+                                    }}
                                     className="w-full p-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-gray-900 dark:text-white outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 dark:focus:ring-indigo-400/10 shadow-sm transition-all"
                                 />
                             </div>
@@ -96,8 +99,11 @@ export default function PFCalculator() {
                                 <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Retirement Age</label>
                                 <input
                                     type="number"
-                                    value={retirementAge}
-                                    onChange={e => setRetirementAge(Number(e.target.value))}
+                                    value={retirementAge === 0 ? '' : retirementAge}
+                                    onChange={e => {
+                                        const val = e.target.value;
+                                        setRetirementAge(val === '' ? 0 : Number(val));
+                                    }}
                                     className="w-full p-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-gray-900 dark:text-white outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 dark:focus:ring-indigo-400/10 shadow-sm transition-all"
                                 />
                             </div>

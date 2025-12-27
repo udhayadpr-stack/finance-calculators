@@ -65,8 +65,11 @@ export default function ForeclosureCalculator() {
                                 <div className="relative">
                                     <input
                                         type="number"
-                                        value={remainingTenure}
-                                        onChange={e => setRemainingTenure(Number(e.target.value))}
+                                        value={remainingTenure === 0 ? '' : remainingTenure}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            setRemainingTenure(val === '' ? 0 : Number(val));
+                                        }}
                                         className="w-full pl-4 pr-16 py-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl font-bold text-gray-900 dark:text-white outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 dark:focus:ring-primary/20 shadow-sm transition-all"
                                     />
                                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded">Months</span>
@@ -169,7 +172,7 @@ export default function ForeclosureCalculator() {
 
                             <div className="space-y-6">
                                 <div>
-                                    <span className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Penalty Charges</span>
+                                    <span className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Penalty (+18% GST)</span>
                                     <span className="block text-2xl font-bold text-rose-500 dark:text-rose-400 font-mono tracking-tight">{toINR(Math.round(calc.penalty))}</span>
                                 </div>
                                 <div className="pt-4 border-t border-gray-100/80 dark:border-slate-700/50">
