@@ -1,44 +1,64 @@
 # Finance Calculators Web App
 
-A premium, glassmorphism-styled financial calculator suite built with React, Vite, and Tailwind CSS (v4).
+A modern, high-performance financial calculator suite built with **React**, **Vite**, and **Tailwind CSS**. Designed for accuracy and a premium user experience.
 
-## Included Calculators
-1.  **Salary Architect**: In-hand salary calculator with New/Old regime comparison.
-2.  **PF Calculator**: Employee Provident Fund corpus projection.
-3.  **EMI Calculator**: Loan amortization schedule.
-4.  **Mutual Funds**: SIP and Lumpsum return estimator.
-5.  **Foreclosure Calculator**: Loan pre-closure cost-benefit analysis.
+## Features
 
-## 🚀 How to Run
+-   **Salary Architect**: Calculate in-hand salary with New vs. Old tax regime comparisons.
+-   **PF Calculator**: Project Employee Provident Fund corpus.
+-   **EMI Calculator**: Visualize loan amortization schedules.
+-   **Mutual Funds**: Estimate returns for SIP and Lumpsum investments.
+-   **Foreclosure Calculator**: Analyze loan pre-closure costs and benefits.
+
+## Tech Stack
+
+-   **Frontend**: React (v19), Vite
+-   **Styling**: Tailwind CSS (v4), PostCSS
+-   **Icons**: Lucide React
+-   **Routing**: React Router DOM (v7)
+
+## Quickstart
 
 ### Prerequisites
--   Node.js installed (v18+ recommended)
 
-### Steps
+-   Node.js (v18+)
 
-1.  **Navigate to the project directory**:
+### Installation
+
+1.  **Clone the repository**:
     ```bash
+    git clone <repository-url>
     cd finance-calculators
     ```
-    *(If you are in the scratch root, the full path is `C:\Users\Udhaya T-VIN859\.gemini\antigravity\scratch\finance-calculators`)*
 
 2.  **Install dependencies**:
     ```bash
     npm install
     ```
 
-3.  **Start the development server**:
+3.  **Start development server**:
     ```bash
     npm run dev
     ```
+    Access the app at `http://localhost:5173`.
 
-4.  **Open in Browser**:
-    Click the URL shown in the terminal, usually: `http://localhost:5173`
+## Scripts
 
-## Building for Production
+-   `npm run dev`: Start the dev server.
+-   `npm run build`: Build for production.
+-   `npm run preview`: Preview the production build locally.
+-   `npm run lint`: Run ESLint.
 
-To create a production-ready build:
-```bash
-npm run build
-```
-The output will be in the `dist/` folder.
+## Deployment
+
+To deploy to production (e.g., Vercel, Netlify):
+
+1.  Run the build command:
+    ```bash
+    npm run build
+    ```
+2.  The output will be in the `dist/` directory, ready to be served.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
