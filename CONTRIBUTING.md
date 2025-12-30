@@ -1,29 +1,42 @@
-# Contributing to Finance Calculators
+# Contributing to Finance Calculators & Utilities
 
-Thank you for your interest in contributing! We welcome bug reports, feature requests, and pull requests.
+Thank you for your interest in contributing! We welcome contributions to both the **Finance Web** and **Orbit Calc** projects.
 
-## getting Started
+## Getting Started
 
-1.  **Fork** the repository.
-2.  **Clone** your fork.
-3.  **Install dependencies**:
+1.  **Fork the repository** on GitHub.
+2.  **Clone your fork** locally.
     ```bash
-    npm install
+    git clone https://github.com/your-username/finance-calculators.git
+    cd finance-calculators
     ```
-4.  **Run the dev server**:
+3.  **Choose a project** to work on:
+    - `finance_web`: React web app.
+    - `orbit_calc`: React Native mobile app.
+
+## Development Workflow
+
+1.  **Create a new branch** for your feature or bug fix.
     ```bash
-    npm run dev
+    git checkout -b feature/amazing-feature
+    # or
+    git checkout -b fix/critical-bug
     ```
-
-## Code Style
-
--   Use **ESLint** and **Prettier** (if configured) for formatting.
--   Follow the existing project structure.
--   Keep components small and reusable.
+2.  **Make your changes**. Please follow the coding style of the existing project.
+3.  **Test your changes**.
+    - For `finance_web`, run `npm test` (if available) and verify the UI.
+    - For `orbit_calc`, verify on an emulator or device.
+4.  **Commit your changes** with a clear and descriptive message.
+    ```bash
+    git commit -m "feat: add robust interest rate calculation"
+    ```
 
 ## Pull Requests
 
-1.  Create a new branch for your feature or fix.
-2.  Commit your changes with clear messages.
-3.  Push to your fork and submit a Pull Request.
-4.  Describe your changes and why they are needed.
+1.  Push your branch directly to your fork.
+2.  Open a Pull Request against the `main` branch of this repository.
+3.  Fill out the Pull Request Template with details about your changes.
+
+## Code of Conduct
+
+Please be respectful and professional in all interactions. We strive to maintain a welcoming and inclusive community.

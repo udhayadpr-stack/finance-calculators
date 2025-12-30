@@ -1,64 +1,41 @@
-# Finance Calculators Web App
+# Finance Calculators & Utilities
 
-A modern, high-performance financial calculator suite built with **React**, **Vite**, and **Tailwind CSS**. Designed for accuracy and a premium user experience.
+A unified repository containing a suite of financial calculation tools and a mobile orbital mechanics application.
 
-## Features
+## Projects
 
--   **Salary Architect**: Calculate in-hand salary with New vs. Old tax regime comparisons.
--   **PF Calculator**: Project Employee Provident Fund corpus.
--   **EMI Calculator**: Visualize loan amortization schedules.
--   **Mutual Funds**: Estimate returns for SIP and Lumpsum investments.
--   **Foreclosure Calculator**: Analyze loan pre-closure costs and benefits.
+### 1. [Finance Web](./finance_web)
+A modern, high-performance web application built with **React** and **Vite**.
+- **Features**: Salary Architect (New vs Old Tax Regime), PF, EMI, Mutual Funds, and Foreclosure calculators.
+- **Tech Stack**: React v19, Tailwind CSS v4, shadcn/ui.
 
-## Tech Stack
-
--   **Frontend**: React (v19), Vite
--   **Styling**: Tailwind CSS (v4), PostCSS
--   **Icons**: Lucide React
--   **Routing**: React Router DOM (v7)
+### 2. [Orbit Calc](./orbit_calc)
+A cross-platform mobile application for orbital math and physics calculations.
+- **Features**: Orbital mechanics workspace (planned).
+- **Tech Stack**: React Native, Expo, TypeScript.
 
 ## Quickstart
 
 ### Prerequisites
+- Node.js (v18+)
+- npm or yarn
 
--   Node.js (v18+)
+### Running the Finance Web App
+```bash
+cd finance_web
+npm install
+npm run dev
+```
 
-### Installation
+### Running the Orbit Calc App
+```bash
+cd orbit_calc
+npm install
+npx expo start
+```
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <repository-url>
-    cd finance-calculators
-    ```
-
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
-
-3.  **Start development server**:
-    ```bash
-    npm run dev
-    ```
-    Access the app at `http://localhost:5173`.
-
-## Scripts
-
--   `npm run dev`: Start the dev server.
--   `npm run build`: Build for production.
--   `npm run preview`: Preview the production build locally.
--   `npm run lint`: Run ESLint.
-
-## Deployment
-
-To deploy to production (e.g., Vercel, Netlify):
-
-1.  Run the build command:
-    ```bash
-    npm run build
-    ```
-2.  The output will be in the `dist/` directory, ready to be served.
+## Contributing
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## License
-
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

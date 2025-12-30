@@ -2,8 +2,12 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability, please do **not** open an issue.
+We take security seriously. If you discover a security vulnerability in this project, please report it privately.
 
-Instead, please email the maintainers directly or use the GitHub Security Advisory feature if available.
+**Resulting Vulnerabilities**
+Do not open a public issue for security vulnerabilities.
 
-We will address the issue as soon as possible.
+**How to Report**
+Please email the repository maintainer directly or engage via a Private Vulnerability Report on GitHub if available.
+
+We will acknowledge your report within 48 hours and provide an estimated timeline for a fix.
