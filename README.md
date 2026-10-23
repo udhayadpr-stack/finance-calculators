@@ -1,41 +1,30 @@
-# Finance Calculators & Utilities
+# Finance Calculators & OrbitCalc
 
-A unified repository containing a suite of financial calculation tools and a mobile orbital mechanics application.
+Two client-side projects. Calculations run locally; there is no application backend.
 
-## Projects
+| Project | Purpose | Stack |
+| --- | --- | --- |
+| [Finance Web](./finance_web) | Indian salary/tax comparison, EPF, gratuity, EMI, SIP/lumpsum and foreclosure estimates | React 19, Vite 7, Tailwind CSS 4 |
+| [OrbitCalc](./orbit_calc) | Math worksheet with variables, functions, units and locally saved lines | React Native, Expo SDK 54, TypeScript, mathjs |
 
-### 1. [Finance Web](./finance_web)
-A modern, high-performance web application built with **React** and **Vite**.
-- **Features**: Salary Architect (New vs Old Tax Regime), PF, EMI, Mutual Funds, and Foreclosure calculators.
-- **Tech Stack**: React v19, Tailwind CSS v4, shadcn/ui.
+Use Node.js **22.12 or later** (CI uses Node 24) and npm. Run commands from the relevant project directory:
 
-### 2. [Orbit Calc](./orbit_calc)
-A cross-platform mobile application for orbital math and physics calculations.
-- **Features**: Orbital mechanics workspace (planned).
-- **Tech Stack**: React Native, Expo, TypeScript.
-
-## Quickstart
-
-### Prerequisites
-- Node.js (v18+)
-- npm or yarn
-
-### Running the Finance Web App
-```bash
+```sh
 cd finance_web
-npm install
+npm ci
 npm run dev
 ```
 
-### Running the Orbit Calc App
-```bash
+```sh
 cd orbit_calc
-npm install
-npx expo start
+npm ci
+npm start
 ```
 
-## Contributing
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+Both projects provide `npm test` and `npm run lint`. Finance Web builds with `npm run build`; OrbitCalc additionally provides `npm run typecheck` and `npm run build:web`.
 
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+For Vercel, the root `vercel.json` installs and builds Finance Web from this repository's root. Setting Vercel's Root Directory to `finance_web` is also supported by its app-level configuration. See [deployment details](finance_web/README.md#deployment).
+
+Read [calculation assumptions and official references](docs/CALCULATION_METHODS.md) before relying on estimates, and [the review record](docs/AUDIT.md) for validation and remaining limitations. The salary model is explicitly scoped to FY 2025–26 / AY 2026–27; rates are not updated from an external feed.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Licensed under [MIT](LICENSE).

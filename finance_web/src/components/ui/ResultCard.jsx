@@ -40,7 +40,7 @@ export const ResultCard = ({
                 </p>
                 <h3 className={clsx(
                     "font-display font-bold tracking-tight",
-                    type === 'primary' ? "text-3xl text-white" : "text-2xl text-gray-900 dark:text-gray-50",
+                    type === 'primary' ? "text-2xl sm:text-3xl text-white" : "text-xl sm:text-2xl text-gray-900 dark:text-gray-50",
                     type === 'highlight' && "text-amber-700 dark:text-amber-400"
                 )}>
                     {typeof value === 'number' ? toINR(value) : value}

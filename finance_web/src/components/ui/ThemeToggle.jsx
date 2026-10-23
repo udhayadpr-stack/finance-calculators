@@ -4,12 +4,11 @@ import clsx from 'clsx';
 
 export const ThemeToggle = () => {
     const [theme, setTheme] = useState(() => {
-        if (typeof window !== 'undefined' && localStorage.getItem('theme')) {
-            return localStorage.getItem('theme');
-        }
-        if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            return 'dark';
-        }
+        try {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark' || saved === 'light') return saved;
+        } catch { /* Storage may be disabled by the browser. */ }
+        if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark';
         return 'light';
     });
 
@@ -20,7 +19,7 @@ export const ThemeToggle = () => {
         } else {
             root.classList.remove('dark');
         }
-        localStorage.setItem('theme', theme);
+        try { localStorage.setItem('theme', theme); } catch { /* Theme still works without storage. */ }
     }, [theme]);
 
     const toggleTheme = () => {
@@ -38,6 +37,7 @@ export const ThemeToggle = () => {
             )}
             title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
             aria-label="Toggle Dark Mode"
+            aria-pressed={theme === 'dark'}
         >
             <div className="relative z-10">
                 {theme === 'dark' ? (
