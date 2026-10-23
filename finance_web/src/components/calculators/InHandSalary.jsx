@@ -1,3 +1,4 @@
+import { CalculatorNotice } from '../ui/CalculatorNotice';
 import React, { useState, useMemo } from 'react';
 import {
     Building2,
@@ -5,7 +6,7 @@ import {
 } from 'lucide-react';
 import { MoneyInput } from '../ui/MoneyInput';
 import { ResultCard } from '../ui/ResultCard';
-import { toINR, parseMoney } from '../../utils/formatters';
+import { toINR, percentage } from '../../utils/formatters';
 
 
 
@@ -121,6 +122,12 @@ export default function InHandSalaryCalculator() {
             {/* --- LEFT: INPUTS --- */}
             <div className="lg:col-span-5 space-y-6">
 
+                <CalculatorNotice error={calc.error}>
+                    FY 2025–26 (AY 2026–27). Resident salaried individuals below 60; ordinary income only.
+                    PT defaults to ₹208/month; use your state-specific average. 80C includes employee EPF (₹1.5L cap);
+                    enter only eligible 80D deductions after family/age limits. Additional NPS is capped at ₹50,000.
+                    PF ceiling and employer provisions are planning assumptions; match them to your payslip.
+                </CalculatorNotice>
                 {/* 1. MASTER INPUT */}
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-white/40 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 backdrop-blur-xl relative overflow-hidden transition-colors">
                     <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
@@ -138,6 +145,7 @@ export default function InHandSalaryCalculator() {
 
                     <div className="relative mb-6">
                         <MoneyInput
+                            ariaLabel="Annual CTC"
                             value={ctcInput}
                             onChange={setCtcInput}
                             placeholder="0"
@@ -156,7 +164,7 @@ export default function InHandSalaryCalculator() {
                             onClick={() => setConfig(p => ({ ...p, pfCapped: true }))}
                             className={`px-4 py-2 rounded-xl border text-[10px] font-bold uppercase transition-all ${config.pfCapped ? 'bg-indigo-600 dark:bg-indigo-500 border-indigo-600 dark:border-indigo-500 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:border-indigo-200 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                         >
-                            Capped PF (₹1,800)
+                            Capped PF ({toINR((config.pfWageCap ?? 15000) * 0.12)})
                         </button>
                     </div>
                 </div>
@@ -198,7 +206,8 @@ export default function InHandSalaryCalculator() {
                                 </div>
                                 <input
                                     type="range"
-                                    min="30" max="60"
+                                    aria-label="Basic salary ratio"
+                                min="30" max="60"
                                     value={config.basicRatio}
                                     onChange={(e) => setConfig({ ...config, basicRatio: parseInt(e.target.value) })}
                                     disabled={overrides.basic !== undefined}
@@ -230,17 +239,19 @@ export default function InHandSalaryCalculator() {
                 <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/60 dark:border-slate-700 shadow-xl shadow-slate-100/50 dark:shadow-slate-900/50 overflow-hidden backdrop-blur-xl transition-colors">
                     <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50/80 dark:bg-slate-900/80 backdrop-blur-sm flex justify-between items-center">
                         <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">Deductions & Benefits</h3>
-                        <button onClick={() => setShowAdvanced(!showAdvanced)} className={`text-[10px] px-2 py-1 rounded-lg border transition-all flex items-center gap-1.5 font-bold uppercase tracking-wider ${showAdvanced ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-slate-600 hover:border-gray-300'}`}>
+                        <button aria-expanded={showAdvanced} onClick={() => setShowAdvanced(!showAdvanced)} className={`text-[10px] px-2 py-1 rounded-lg border transition-all flex items-center gap-1.5 font-bold uppercase tracking-wider ${showAdvanced ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-slate-600 hover:border-gray-300'}`}>
                             <Settings className="w-3 h-3" /> Advanced
                         </button>
                     </div>
 
                     {showAdvanced && (
-                        <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-700 px-6 py-3 text-xs flex gap-4 items-center animate-in slide-in-from-top-1 transition-colors">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-700 px-6 py-3 text-xs flex flex-col gap-4 items-start animate-in slide-in-from-top-1 transition-colors">
                             <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 dark:text-gray-300 font-medium">
                                 <input type="checkbox" checked={config.includeAdminCharges} onChange={(e) => setConfig({ ...config, includeAdminCharges: e.target.checked })} className="rounded text-indigo-600 focus:ring-0 w-4 h-4 border-gray-300 dark:border-slate-600 dark:bg-slate-800" />
-                                Include PF Admin Charges (0.65%)
+                                Include employer overhead provision
                             </label>
+                            <MoneyInput label="Monthly PF wage cap" value={config.pfWageCap ?? 15000} onChange={v => setConfig({...config, pfWageCap: v})} />
+                            <MoneyInput label="Employer overhead provision (%)" symbol="%" max={100} value={config.adminRate ?? 0.65} onChange={v => setConfig({...config, adminRate: v})} />
                         </div>
                     )}
 
@@ -261,8 +272,8 @@ export default function InHandSalaryCalculator() {
                                     <span className="h-px w-8 bg-indigo-100 dark:bg-indigo-900"></span> Old Regime Tax Savers <span className="h-px w-8 bg-indigo-100 dark:bg-indigo-900"></span>
                                 </div>
                                 <MoneyInput label="Rent Paid (Yr)" value={savers.rent} onChange={(v) => setSavers({ ...savers, rent: v })} isManual={true} showToggle={false} />
-                                <MoneyInput label="80C (LIC/PPF)" value={savers.sec80c} onChange={(v) => setSavers({ ...savers, sec80c: v })} isManual={true} showToggle={false} />
-                                <MoneyInput label="80D (Medical)" value={savers.sec80d} onChange={(v) => setSavers({ ...savers, sec80d: v })} isManual={true} showToggle={false} />
+                                <MoneyInput label="80C total (incl. EPF)" value={savers.sec80c} onChange={(v) => setSavers({ ...savers, sec80c: v })} isManual={true} showToggle={false} />
+                                <MoneyInput label="80D eligible deduction" value={savers.sec80d} onChange={(v) => setSavers({ ...savers, sec80d: v })} isManual={true} showToggle={false} />
                                 <MoneyInput label="NPS (80CCD1B)" value={savers.nps} onChange={(v) => setSavers({ ...savers, nps: v })} isManual={true} showToggle={false} />
                             </>
                         )}
@@ -283,7 +294,7 @@ export default function InHandSalaryCalculator() {
                             <div className="text-indigo-100 text-[11px] font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div> Monthly In-Hand
                             </div>
-                            <div className="text-5xl font-bold tracking-tight font-display mb-8">{toINR(calc.monthlyInHand)}</div>
+                            <div className="text-3xl sm:text-4xl lg:text-3xl xl:text-4xl font-bold tracking-tight font-display mb-8 break-words">{toINR(calc.monthlyInHand)}</div>
 
                             <div className="space-y-2">
                                 <div className="flex justify-between text-[10px] text-indigo-200 uppercase tracking-widest font-bold">
@@ -291,7 +302,7 @@ export default function InHandSalaryCalculator() {
                                     <span>{calc.reconciledCTC > 0 ? Math.round((calc.annualNet / calc.reconciledCTC) * 100) : 0}%</span>
                                 </div>
                                 <div className="w-full bg-black/20 h-2 rounded-full overflow-hidden backdrop-blur-sm">
-                                    <div style={{ width: `${calc.reconciledCTC > 0 ? (calc.annualNet / calc.reconciledCTC) * 100 : 0}%` }} className="h-full bg-gradient-to-r from-emerald-400 to-emerald-300 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.5)]"></div>
+                                    <div style={{ width: `${percentage(calc.annualNet, calc.reconciledCTC)}%` }} className="h-full bg-gradient-to-r from-emerald-400 to-emerald-300 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.5)]"></div>
                                 </div>
                             </div>
                         </div>
@@ -313,6 +324,14 @@ export default function InHandSalaryCalculator() {
                     </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                    <ResultCard label="New regime annual tax" value={calc.taxNew} type="secondary" />
+                    <ResultCard label="Old regime annual tax" value={calc.taxOld} type="secondary" />
+                    <p className="col-span-2 text-sm text-slate-600 dark:text-slate-300">
+                        {calc.taxNew === calc.taxOld ? 'Both regimes have the same estimated tax.' :
+                            `${calc.taxNew < calc.taxOld ? 'New' : 'Old'} regime saves ${toINR(Math.abs(calc.taxNew - calc.taxOld))} per year with these deductions.`}
+                    </p>
+                </div>
                 {/* 2. WATERFALL CHART */}
                 <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200/60 dark:border-slate-700 shadow-xl shadow-slate-100/50 dark:shadow-slate-900/50 transition-colors">
                     <div className="flex justify-between items-center mb-8">
@@ -328,21 +347,21 @@ export default function InHandSalaryCalculator() {
                         <Bar height="100%" color="bg-slate-200 dark:bg-slate-700" val={toINR(calc.reconciledCTC)} label="CTC" txtColor="text-gray-900 dark:text-gray-100" />
                         <div className="pb-8 text-gray-300 dark:text-slate-600 hidden sm:block"><ChevronDown className="w-5 h-5" /></div>
                         <Bar
-                            height={`${calc.reconciledCTC > 0 ? (calc.annualNet / calc.reconciledCTC) * 100 : 0}%`}
+                            height={`${percentage(calc.annualNet, calc.reconciledCTC)}%`}
                             color="bg-emerald-500"
                             val={toINR(calc.annualNet)}
                             label="Net Pay"
                             txtColor="text-emerald-600 dark:text-emerald-400"
                         />
                         <Bar
-                            height={`${calc.reconciledCTC > 0 ? (calc.finalTax / calc.reconciledCTC) * 100 : 0}%`}
+                            height={`${percentage(calc.finalTax + calc.annualPT, calc.reconciledCTC)}%`}
                             color="bg-red-500"
-                            val={toINR(calc.finalTax)}
-                            label="Tax"
+                            val={toINR(calc.finalTax + calc.annualPT)}
+                            label="Taxes"
                             txtColor="text-red-500 dark:text-red-400"
                         />
                         <Bar
-                            height={`${calc.reconciledCTC > 0 ? ((calc.valEePF + calc.ghostTotal) / calc.reconciledCTC) * 100 : 0}%`}
+                            height={`${percentage(calc.valEePF + calc.ghostTotal, calc.reconciledCTC)}%`}
                             color="bg-amber-500"
                             val={toINR(calc.valEePF + calc.ghostTotal)}
                             label="Benefits"
@@ -354,6 +373,7 @@ export default function InHandSalaryCalculator() {
                 {/* 3. TAX EXPLANATION DRAWER */}
                 <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/60 dark:border-slate-700 shadow-xl shadow-slate-100/50 dark:shadow-slate-900/50 overflow-hidden transition-colors">
                     <button
+                        aria-expanded={showExplanation}
                         onClick={() => setShowExplanation(!showExplanation)}
                         className="w-full flex items-center justify-between p-5 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
                     >
@@ -379,7 +399,7 @@ export default function InHandSalaryCalculator() {
                                 </div>
 
                                 {/* Show PT deduction only if it applies */}
-                                {calc.annualPT > 0 && (
+                                {regime === 'old' && calc.annualPT > 0 && (
                                     <div>
                                         <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 block mb-1">Prof. Tax</span>
                                         <span className="font-bold text-emerald-600 dark:text-emerald-400">-{toINR(calc.annualPT)}</span>
@@ -394,11 +414,14 @@ export default function InHandSalaryCalculator() {
                                         </div>
                                         <div>
                                             <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 block mb-1">Sections</span>
-                                            <span className="font-bold text-emerald-600 dark:text-emerald-400">-{toINR(savers.sec80c + savers.sec80d + savers.nps)}</span>
+                                            <span className="font-bold text-emerald-600 dark:text-emerald-400">-{toINR(calc.chap6A)}</span>
                                         </div>
                                     </>
                                 )}
                             </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                                Rebate: {toINR(calc.taxDetails.rebate)} · Marginal relief: {toINR(calc.taxDetails.marginalRelief + calc.taxDetails.surchargeRelief)} · Surcharge before relief: {toINR(calc.taxDetails.surcharge)}
+                            </p>
                             <div className="flex justify-between items-center pt-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl transition-colors">
                                 <span className="font-bold text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide">Taxable Income</span>
                                 <span className="font-mono font-bold text-lg text-gray-900 dark:text-gray-100">{toINR(regime === 'new' ? calc.taxableNew : calc.taxableOld)}</span>

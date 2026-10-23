@@ -1,3 +1,4 @@
+import { CalculatorNotice } from '../ui/CalculatorNotice';
 import React, { useState, useMemo } from 'react';
 import {
     TrendingUp,
@@ -5,12 +6,13 @@ import {
     Target
 } from 'lucide-react';
 import { MoneyInput } from '../ui/MoneyInput';
-import { toINR, parseMoney } from '../../utils/formatters';
+import { toINR, percentage } from '../../utils/formatters';
 import clsx from 'clsx';
 
 import { calculateMF } from '../../utils/calculators/mf';
 
 export default function MFCalculator() {
+    const [contributionTiming, setContributionTiming] = useState('beginning');
     const [type, setType] = useState('sip'); // sip | lumpsum
     const [amount, setAmount] = useState(5000);
     const [rate, setRate] = useState(12);
@@ -19,11 +21,11 @@ export default function MFCalculator() {
     const calc = useMemo(() => {
         return calculateMF({
             type,
-            amount: parseMoney(amount),
+            amount,
             rate,
-            years
+            years, contributionTiming
         });
-    }, [type, amount, rate, years]);
+    }, [type, amount, rate, years, contributionTiming]);
 
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
@@ -47,7 +49,16 @@ export default function MFCalculator() {
                         <button onClick={() => { setType('lumpsum'); setAmount(100000); }} className={clsx("flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all", type === 'lumpsum' ? 'bg-white dark:bg-slate-600 text-emerald-700 dark:text-emerald-300 shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300')}>Lumpsum</button>
                     </div>
 
+                    <CalculatorNotice error={calc.error}>
+                        SIP uses the annual nominal rate divided by 12; lumpsum uses annual compounding.
+                        These are constant-rate illustrations before tax, fees and inflation, not guaranteed returns.
+                    </CalculatorNotice>
                     <div className="space-y-6">
+                        {type === 'sip' && <label className="block text-xs font-semibold">Monthly deposit timing
+                            <select aria-label="Monthly deposit timing" value={contributionTiming} onChange={e => setContributionTiming(e.target.value)} className="mt-2 w-full p-3 rounded-xl border bg-white dark:bg-slate-800">
+                                <option value="beginning">Beginning of month</option><option value="end">End of month</option>
+                            </select>
+                        </label>}
                         <MoneyInput
                             label={type === 'sip' ? "Monthly Investment" : "Total Investment"}
                             value={amount}
@@ -63,7 +74,8 @@ export default function MFCalculator() {
                                 </div>
                                 <input
                                     type="range"
-                                    min="1" max="30" step="0.5"
+                                    aria-label="Expected annual return"
+                                min="0" max="30" step="0.5"
                                     value={rate}
                                     onChange={(e) => setRate(Number(e.target.value))}
                                     className="w-full h-2 bg-gray-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600 dark:accent-emerald-500 hover:accent-emerald-500 transition-all"
@@ -77,7 +89,8 @@ export default function MFCalculator() {
                                 </div>
                                 <input
                                     type="range"
-                                    min="1" max="40"
+                                    aria-label="Investment duration"
+                                min="1" max="40"
                                     value={years}
                                     onChange={(e) => setYears(Number(e.target.value))}
                                     className="w-full h-2 bg-gray-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600 dark:accent-emerald-500 hover:accent-emerald-500 transition-all"
@@ -104,7 +117,7 @@ export default function MFCalculator() {
                         </div>
                         <div className="col-span-1 md:col-span-3 pt-6 border-t border-white/10">
                             <div className="text-emerald-100/70 text-xs font-bold uppercase tracking-widest mb-1">Total Value</div>
-                            <div className="text-5xl font-bold tracking-tight font-display">{toINR(Math.round(calc.totalValue))}</div>
+                            <div className="text-3xl sm:text-4xl font-bold tracking-tight font-display">{toINR(Math.round(calc.totalValue))}</div>
                         </div>
                     </div>
 
@@ -120,14 +133,14 @@ export default function MFCalculator() {
                         </div>
                         <div className="relative h-14 w-full bg-slate-50 dark:bg-slate-900/50 rounded-full overflow-hidden flex shadow-inner ring-1 ring-slate-100 dark:ring-slate-700">
                             <div
-                                style={{ width: `${(calc.invested / calc.totalValue) * 100}%` }}
+                                style={{ width: `${percentage(calc.invested, calc.totalValue)}%` }}
                                 className="h-full bg-slate-400 dark:bg-slate-600 flex items-center justify-center text-white font-bold text-xs relative group"
                             >
                                 <span className="drop-shadow-md z-10 transition-transform group-hover:scale-110">Invested</span>
                                 <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent"></div>
                             </div>
                             <div
-                                style={{ width: `${(calc.estReturns / calc.totalValue) * 100}%` }}
+                                style={{ width: `${percentage(calc.estReturns, calc.totalValue)}%` }}
                                 className="h-full bg-emerald-500 flex items-center justify-center text-white font-bold text-xs relative group"
                             >
                                 <span className="drop-shadow-md z-10 transition-transform group-hover:scale-110">Returns</span>
@@ -135,8 +148,8 @@ export default function MFCalculator() {
                             </div>
                         </div>
                         <div className="flex justify-between text-xs font-bold text-gray-600 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-slate-700">
-                            <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-slate-400 dark:bg-slate-600 shadow-sm"></div> Invested: {Math.round((calc.invested / calc.totalValue) * 100)}%</span>
-                            <span className="flex items-center gap-2">Returns: {Math.round((calc.estReturns / calc.totalValue) * 100)}% <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></div></span>
+                            <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-slate-400 dark:bg-slate-600 shadow-sm"></div> Invested: {Math.round(percentage(calc.invested, calc.totalValue))}%</span>
+                            <span className="flex items-center gap-2">Returns: {Math.round(percentage(calc.estReturns, calc.totalValue))}% <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></div></span>
                         </div>
                     </div>
                 </div>

@@ -1,64 +1,42 @@
-# Finance Calculators Web App
+# FinCalc
 
-A modern, high-performance financial calculator suite built with **React**, **Vite**, and **Tailwind CSS**. Designed for accuracy and a premium user experience.
+Six financial planning calculators: salary, EPF, gratuity, EMI, mutual funds, and loan foreclosure. All calculations run in the browser. Values use Indian rupee formatting.
 
-## Features
+## Development
 
--   **Salary Architect**: Calculate in-hand salary with New vs. Old tax regime comparisons.
--   **PF Calculator**: Project Employee Provident Fund corpus.
--   **EMI Calculator**: Visualize loan amortization schedules.
--   **Mutual Funds**: Estimate returns for SIP and Lumpsum investments.
--   **Foreclosure Calculator**: Analyze loan pre-closure costs and benefits.
+From this directory, with Node.js 22.12+:
 
-## Tech Stack
+```sh
+npm ci
+npm run dev
+```
 
--   **Frontend**: React (v19), Vite
--   **Styling**: Tailwind CSS (v4), PostCSS
--   **Icons**: Lucide React
--   **Routing**: React Router DOM (v7)
+## Checks
 
-## Quickstart
+```sh
+npm run lint
+npm test
+npm run build
+npm audit
+npx playwright install chromium
+npm run test:e2e
+```
 
-### Prerequisites
+The browser suite uses the production preview and checks desktop, phone and tablet viewports. Build before running it. `npm run test:watch` starts interactive unit tests.
 
--   Node.js (v18+)
+## Features and assumptions
 
-### Installation
+- Compare old and new regime salary tax for FY 2025–26, including rebate, marginal relief, surcharge and cess. Manual salary components remain available, with reconciliation warnings.
+- EPF projections separate opening funds, future employee deposits, employer EPF and interest. EPS membership, wage ceiling and contributions are editable.
+- Gratuity uses actual service eligibility, completed months, an optional qualifying-remuneration wage floor, central-government retirement rules, actual employer payout and prior exemption inputs.
+- EMI includes a yearly summary and monthly CSV export.
+- SIP supports beginning/end-of-month contributions. Lumpsum uses annual compounding.
+- Foreclosure compares nominal payment totals and displays charges inclusive of configurable GST.
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <repository-url>
-    cd finance-calculators
-    ```
-
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
-
-3.  **Start development server**:
-    ```bash
-    npm run dev
-    ```
-    Access the app at `http://localhost:5173`.
-
-## Scripts
-
--   `npm run dev`: Start the dev server.
--   `npm run build`: Build for production.
--   `npm run preview`: Preview the production build locally.
--   `npm run lint`: Run ESLint.
+The calculators are estimates with explicit scope, not payroll or lender settlement quotations. See [methods and sources](../docs/CALCULATION_METHODS.md).
 
 ## Deployment
 
-To deploy to production (e.g., Vercel, Netlify):
+Set Vercel's **Root Directory** to `finance_web`, build command to `npm run build`, and output directory to `dist`. `vercel.json` rewrites app routes so `/emi`, `/pf`, etc. work when opened directly or refreshed. Other static hosts need an equivalent fallback to `index.html`.
 
-1.  Run the build command:
-    ```bash
-    npm run build
-    ```
-2.  The output will be in the `dist/` directory, ready to be served.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+`npm run preview` serves the production build locally.

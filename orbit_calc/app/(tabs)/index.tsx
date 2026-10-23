@@ -6,8 +6,9 @@ import { CommandHelp } from '../../components/CommandHelp';
 import { CellData } from '../../types';
 
 export default function WorkspaceScreen() {
-  const { cells, addCell, updateCellInput, deleteCell, evaluateAll } = useWorkspaceStore();
+  const { cells, addCell, updateCellInput, deleteCell, evaluateAll, hasHydrated, storageError } = useWorkspaceStore();
   const flatListRef = useRef<FlatList>(null);
+  useEffect(() => { void useWorkspaceStore.persist.rehydrate(); }, []);
   const [helpVisible, setHelpVisible] = useState(false);
 
   const handleShare = async () => {
@@ -15,11 +16,12 @@ export default function WorkspaceScreen() {
       const content = cells
         .map(c => {
           if (!c.rawInput.trim()) return '';
-          return `${c.rawInput} = ${c.output || '?'}`;
+          return `${c.rawInput} = ${c.error ? `Error: ${c.error}` : c.output ?? '?'}`;
         })
         .filter(line => line)
         .join('\n');
 
+      if (!content) { Alert.alert('Nothing to share', 'Add a calculation first.'); return; }
       await Share.share({
         message: content,
         title: 'OrbitCalc Workspace',
@@ -48,15 +50,17 @@ export default function WorkspaceScreen() {
           <TouchableOpacity onPress={handleShare} style={styles.iconButton}>
             <Text style={styles.iconButtonText}>Share</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => useWorkspaceStore.getState().evaluateAll()} style={styles.iconButton}>
+          <TouchableOpacity onPress={evaluateAll} style={styles.iconButton}>
             <Text style={styles.iconButtonText}>Run</Text>
           </TouchableOpacity>
         </View>
       </View>
 
+      {storageError && <Text accessibilityRole="alert" style={{padding: 16, color: '#b91c1c'}}>{storageError}</Text>}
+      {!hasHydrated && <Text style={{padding: 16}}>Loading saved workspace…</Text>}
       <FlatList
         ref={flatListRef}
-        data={cells}
+        data={hasHydrated ? cells : []}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
@@ -70,7 +74,10 @@ export default function WorkspaceScreen() {
       >
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => addCell()}
+          disabled={!hasHydrated}
+          accessibilityRole="button"
+          accessibilityLabel="Add new line"
+          onPress={() => { addCell(); requestAnimationFrame(() => flatListRef.current?.scrollToEnd({animated: true})); }}
         >
           <Text style={styles.addButtonText}>+ New Line</Text>
         </TouchableOpacity>
