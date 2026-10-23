@@ -10,6 +10,7 @@ Reviewed the tracked application code, calculation utilities, UI flows, configs,
 - Invalid, negative, non-finite or extreme inputs could produce misleading results or unbounded loops. Empty chart denominators displayed `NaN`. Numeric focus formatting could lose select-all selection during replacement; browser tests now cover this.
 - Loan arithmetic lost precision at tiny interest rates; zero-tenure foreclosure omitted charges and GST fields. A zero-duration lumpsum disappeared.
 - Theme storage exceptions could crash the app and two independent toggle instances could disagree. Tailwind v4 primary tokens were not registered. Unknown routes had no recovery screen; no deployment rewrite was tracked.
+- The Vercel preview failed with `vite: command not found`. Explicit install/build/output configuration now supports both the repository root and `finance_web` as the deployment root. Installs include development dependencies so Vite is available, and builds invoke the app's npm script. CI also installs and builds Finance Web from the repository root.
 - OrbitCalc imported undeclared UUID/random-value modules, exposed no delete control despite having delete logic, accepted corrupt persisted cells, and could leak partial variable assignments from failed expressions. Function scope identity and storage-write failures are now covered by tests. The Expo export also crashed on startup because Zustand’s ESM `import.meta` was not transformed; the SDK 54 Babel setting is now enabled. Initial cell IDs no longer require browser crypto during server rendering. Both startup fixes are tested in a real browser.
 
 ## Enhancements
@@ -19,6 +20,7 @@ Tax-regime comparison, marginal-relief details, monthly EMI CSV export, SIP depo
 ## Validation
 
 - Finance: 110 unit/component tests, lint and production build pass.
+- Finance deployment: a clean repository-root install with `NODE_ENV=production` and `--include=dev`, followed by the configured npm build command, passes.
 - Finance: 12 Playwright scenarios pass across desktop, phone and tablet viewports, including all six calculator routes, direct loads/reloads, valid/invalid inputs, CSV download, service boundaries, theme persistence and navigation recovery.
 - OrbitCalc: 13 engine/store tests, TypeScript, lint and Expo static web export pass.
 - OrbitCalc: 2 Playwright scenarios pass against the exported web app, covering initial rendering, variable-dependent edits, persisted reloads, cell deletion and corrupt-storage recovery.

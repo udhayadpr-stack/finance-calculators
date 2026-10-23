@@ -23,6 +23,8 @@ npm start
 
 Both projects provide `npm test` and `npm run lint`. Finance Web builds with `npm run build`; OrbitCalc additionally provides `npm run typecheck` and `npm run build:web`.
 
+For Vercel, the root `vercel.json` installs and builds Finance Web from this repository's root. Setting Vercel's Root Directory to `finance_web` is also supported by its app-level configuration. See [deployment details](finance_web/README.md#deployment).
+
 Read [calculation assumptions and official references](docs/CALCULATION_METHODS.md) before relying on estimates, and [the review record](docs/AUDIT.md) for validation and remaining limitations. The salary model is explicitly scoped to FY 2025–26 / AY 2026–27; rates are not updated from an external feed.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Licensed under [MIT](LICENSE).

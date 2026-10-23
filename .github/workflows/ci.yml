@@ -21,10 +21,14 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: finance_web/package-lock.json
-      - run: npm ci
+      - name: Install Finance Web from repository root
+        working-directory: .
+        run: npm --prefix finance_web ci --include=dev
       - run: npm run lint
       - run: npm test
-      - run: npm run build
+      - name: Build Finance Web from repository root
+        working-directory: .
+        run: npm --prefix finance_web run build
       - run: npm audit --audit-level=moderate
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

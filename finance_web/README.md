@@ -37,6 +37,17 @@ The calculators are estimates with explicit scope, not payroll or lender settlem
 
 ## Deployment
 
-Set Vercel's **Root Directory** to `finance_web`, build command to `npm run build`, and output directory to `dist`. `vercel.json` rewrites app routes so `/emi`, `/pf`, etc. work when opened directly or refreshed. Other static hosts need an equivalent fallback to `index.html`.
+The repository includes Vercel configuration for both supported **Root Directory** settings:
+
+| Root Directory | Install command | Build command | Output directory |
+| --- | --- | --- | --- |
+| Repository root (empty setting) | `npm --prefix finance_web ci --include=dev` | `npm --prefix finance_web run build` | `finance_web/dist` |
+| `finance_web` | `npm ci --include=dev` | `npm run build` | `dist` |
+
+Vercel reads the `vercel.json` in the selected root. Its explicit commands override dashboard build/install settings, install the locked dependencies including Vite, and invoke Vite through npm's local binary path. The root configuration deploys Finance Web only; OrbitCalc has its own Expo workflow.
+
+Both configurations rewrite app routes so `/emi`, `/pf`, etc. work when opened directly or refreshed. Other static hosts need an equivalent fallback to `index.html`.
+
+If a build reports `vite: command not found`, confirm that the deployment includes these configuration files, the selected root is one of the two values above, and the install step completed successfully. No global Vite installation is required.
 
 `npm run preview` serves the production build locally.
