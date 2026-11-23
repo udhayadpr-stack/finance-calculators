@@ -21,7 +21,7 @@ describe('MoneyInput Component', () => {
             />
         );
 
-        const button = screen.getByRole('button', { name: /ensure manually/i });
+        const button = screen.getByRole('button', { name: /override manually/i });
         expect(button).toBeInTheDocument();
         expect(button).toHaveAttribute('aria-pressed', 'false');
 

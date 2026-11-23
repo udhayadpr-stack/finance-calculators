@@ -1,50 +1,29 @@
-# Welcome to your Expo app 👋
+# OrbitCalc
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A math worksheet for Android, iOS and web, built with Expo SDK 54. Enter expressions on separate lines, define variables/functions, and work with units. Earlier lines supply variables to later lines.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+npm ci
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Requires Node.js 22.12+. Use `npm run android`, `npm run ios`, or `npm run web` for the respective development target.
 
-## Learn more
+```sh
+npm test
+npm run typecheck
+npm run lint
+npm run build:web
+npx playwright install chromium
+npm run test:e2e
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+The browser suite checks the actual exported app, including startup, persistence and deletion. The Babel configuration enables the Expo SDK 54 `import.meta` transform required by Zustand’s ESM middleware.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+The worksheet is saved in local device/browser storage. Deleting a line recalculates dependents; deleting the last line leaves a blank worksheet. Saved data is validated on load, and a storage error leaves an editable session. Share opens the device share interface.
 
-## Join the community
+A failed expression does not commit its partial assignments. Engine mutation helpers are blocked and each expression has a length limit. This is still a local, interactive math engine, **not an isolation boundary for untrusted remote workloads**; expensive expressions can consume substantial CPU/memory.
 
-Join our community of developers creating universal apps.
+Native Android/iOS device validation remains required before a mobile release. See [the audit record](../docs/AUDIT.md) for remaining Expo dependency advisories. Do not run `npm audit fix --force` without a planned SDK migration and native validation.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+The legacy `reset-project` command is a destructive development helper; it is not part of normal application use.

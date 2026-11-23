@@ -1,3 +1,4 @@
+import { CalculatorNotice } from '../ui/CalculatorNotice';
 import React, { useState, useMemo } from 'react';
 import {
     PiggyBank,
@@ -7,7 +8,7 @@ import {
 } from 'lucide-react';
 import { MoneyInput } from '../ui/MoneyInput';
 import { ResultCard } from '../ui/ResultCard';
-import { toINR, parseMoney } from '../../utils/formatters';
+import { toINR, percentage } from '../../utils/formatters';
 import clsx from 'clsx';
 import { calculatePF } from '../../utils/calculators/pf';
 
@@ -20,6 +21,10 @@ export default function PFCalculator() {
     const [currentBalance, setCurrentBalance] = useState(100000);
     const [interestRate, setInterestRate] = useState(8.25);
     const [annualIncrement, setAnnualIncrement] = useState(5);
+
+    const [epsEligible, setEpsEligible] = useState(true);
+    const [epsWageCap, setEpsWageCap] = useState(15000);
+    const [startMonth, setStartMonth] = useState(new Date().getMonth() + 1);
 
     // Advanced
     const [employeeContrRatio, setEmployeeContrRatio] = useState(12);
@@ -34,12 +39,10 @@ export default function PFCalculator() {
             interestRate,
             annualIncrement,
             employeeContrRatio,
-            employerContrRatio
+            employerContrRatio, epsEligible, epsWageCap, startMonth
         });
-    }, [basicPay, currentAge, retirementAge, currentBalance, interestRate, annualIncrement, employeeContrRatio, employerContrRatio]);
+    }, [basicPay, currentAge, retirementAge, currentBalance, interestRate, annualIncrement, employeeContrRatio, employerContrRatio, epsEligible, epsWageCap, startMonth]);
 
-    // Fix: The loop logic had a syntax error in variable name `totalEmployer contribution` -> `totalEmployerContribution`
-    // I will correct that in the code content below.
 
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
@@ -58,6 +61,10 @@ export default function PFCalculator() {
                         </div>
                     </div>
 
+                    <CalculatorNotice error={calc.error}>
+                        Interest accrues on monthly opening balances and is credited each March. Rates remain constant in this projection.
+                        Opening balance is shown separately; EPS does not form part of the EPF corpus. EPS stops at age 58 in this model.
+                    </CalculatorNotice>
                     <div className="space-y-6">
                         <MoneyInput
                             label="Monthly Basic Pay"
@@ -88,6 +95,8 @@ export default function PFCalculator() {
                                 <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Current Age</label>
                                 <input
                                     type="number"
+                                    aria-label="Current age"
+                                    min="0" max="100"
                                     value={currentAge === 0 ? '' : currentAge}
                                     onChange={e => {
                                         const val = e.target.value;
@@ -100,6 +109,8 @@ export default function PFCalculator() {
                                 <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">Retirement Age</label>
                                 <input
                                     type="number"
+                                    aria-label="Retirement age"
+                                    min="0" max="100"
                                     value={retirementAge === 0 ? '' : retirementAge}
                                     onChange={e => {
                                         const val = e.target.value;
@@ -110,6 +121,19 @@ export default function PFCalculator() {
                             </div>
                         </div>
 
+                        <details className="text-xs space-y-4">
+                            <summary className="cursor-pointer font-semibold">Contribution assumptions</summary>
+                            <MoneyInput label="Employee contribution (%)" symbol="%" value={employeeContrRatio} max={100} onChange={setEmployeeContrRatio} />
+                            <MoneyInput label="Employer contribution (%)" symbol="%" value={employerContrRatio} max={100} onChange={setEmployerContrRatio} />
+                            <MoneyInput label="EPS monthly wage ceiling" value={epsWageCap} onChange={setEpsWageCap} />
+                            <label className="flex gap-2"><input type="checkbox" checked={epsEligible} onChange={e => setEpsEligible(e.target.checked)} />EPS member</label>
+                            <label className="block">Projection start month
+                                <select aria-label="Projection start month" value={startMonth} onChange={e => setStartMonth(Number(e.target.value))} className="ml-2 border rounded p-2 bg-white dark:bg-slate-800">
+                                    {Array.from({length: 12}, (_, i) => <option key={i} value={i + 1}>{new Date(2026, i, 1).toLocaleString('en-IN', {month: 'short'})}</option>)}
+                                </select>
+                            </label>
+                            <p>Default EPS ceiling ₹15,000 is a configurable assumption. Confirm your applicable wage ceiling and pension membership with payroll. Tax on high employee contributions is excluded.</p>
+                        </details>
                         <div>
                             <div className="flex justify-between mb-3 px-1">
                                 <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Annual Increment</label>
@@ -117,6 +141,7 @@ export default function PFCalculator() {
                             </div>
                             <input
                                 type="range"
+                                aria-label="Annual increment"
                                 min="0" max="20"
                                 value={annualIncrement}
                                 onChange={(e) => setAnnualIncrement(parseInt(e.target.value))}
@@ -142,7 +167,7 @@ export default function PFCalculator() {
                         delay={100}
                     />
                     <ResultCard
-                        label="Your Contribution"
+                        label="Future Employee Deposits"
                         value={Math.round(calc.employeeShare)}
                         type="highlight"
                         delay={200}
@@ -156,9 +181,10 @@ export default function PFCalculator() {
                             <span>Corpus Breakdown</span>
                         </div>
                         <div className="relative h-14 w-full bg-slate-50 dark:bg-slate-900/50 rounded-full overflow-hidden flex shadow-inner ring-1 ring-slate-100 dark:ring-slate-700">
+                            <div style={{ width: `${percentage(calc.openingBalance, calc.totalCorpus)}%` }} className="h-full bg-slate-400" title="Opening balance" />
                             {/* Employee Share */}
                             <div
-                                style={{ width: `${(calc.employeeShare / calc.totalCorpus) * 100}%` }}
+                                style={{ width: `${percentage(calc.employeeShare, calc.totalCorpus)}%` }}
                                 className="h-full bg-amber-500 flex items-center justify-center text-white font-bold text-[10px] md:text-xs relative group"
                             >
                                 <span className={clsx("drop-shadow-md z-10 whitespace-nowrap px-1", (calc.employeeShare / calc.totalCorpus) < 0.1 ? "hidden group-hover:block" : "block")}>You</span>
@@ -167,7 +193,7 @@ export default function PFCalculator() {
 
                             {/* Employer Share */}
                             <div
-                                style={{ width: `${(calc.employerShare / calc.totalCorpus) * 100}%` }}
+                                style={{ width: `${percentage(calc.employerShare, calc.totalCorpus)}%` }}
                                 className="h-full bg-indigo-500 flex items-center justify-center text-white font-bold text-[10px] md:text-xs relative group"
                             >
                                 <span className={clsx("drop-shadow-md z-10 whitespace-nowrap px-1", (calc.employerShare / calc.totalCorpus) < 0.1 ? "hidden group-hover:block" : "block")}>Employer</span>
@@ -176,7 +202,7 @@ export default function PFCalculator() {
 
                             {/* Interest */}
                             <div
-                                style={{ width: `${(calc.totalInterest / calc.totalCorpus) * 100}%` }}
+                                style={{ width: `${percentage(calc.totalInterest, calc.totalCorpus)}%` }}
                                 className="h-full bg-emerald-500 flex items-center justify-center text-white font-bold text-[10px] md:text-xs relative group"
                             >
                                 <span className="drop-shadow-md z-10 whitespace-nowrap px-1">Interest</span>
@@ -184,9 +210,10 @@ export default function PFCalculator() {
                             </div>
                         </div>
                         <div className="flex justify-between text-[10px] md:text-xs font-bold text-gray-600 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-slate-700 flex-wrap gap-2">
-                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-amber-500 shadow-sm"></div> You: {Math.round((calc.employeeShare / calc.totalCorpus) * 100)}%</div>
-                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-indigo-500 shadow-sm"></div> Employer: {Math.round((calc.employerShare / calc.totalCorpus) * 100)}%</div>
-                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></div> Interest: {Math.round((calc.totalInterest / calc.totalCorpus) * 100)}%</div>
+                            <div>Opening: {toINR(calc.openingBalance)}</div>
+                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-amber-500 shadow-sm"></div> You: {Math.round(percentage(calc.employeeShare, calc.totalCorpus))}%</div>
+                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-indigo-500 shadow-sm"></div> Employer: {Math.round(percentage(calc.employerShare, calc.totalCorpus))}%</div>
+                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></div> Interest: {Math.round(percentage(calc.totalInterest, calc.totalCorpus))}%</div>
                         </div>
                     </div>
                 </div>
@@ -210,7 +237,7 @@ export default function PFCalculator() {
                                 {calc.breakdown.map((row) => (
                                     <tr key={row.age} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 transition-colors group">
                                         <td className="px-6 py-3 font-medium text-gray-600 dark:text-gray-300 group-hover:text-indigo-700 dark:group-hover:text-indigo-400">{row.age}</td>
-                                        <td className="px-6 py-3 text-gray-500 dark:text-gray-400">{row.year}</td>
+                                        <td className="px-6 py-3 text-gray-500 dark:text-gray-400">{row.month}/{row.year}</td>
                                         <td className="px-6 py-3 text-right font-mono font-bold text-gray-700 dark:text-gray-200 group-hover:text-indigo-700 dark:group-hover:text-indigo-400">{toINR(Math.round(row.balance))}</td>
                                     </tr>
                                 ))}

@@ -1,55 +1,24 @@
-export const calculateForeclosure = ({
-    outstandingPrincipal,
-    interestRate,
-    remainingTenure, // in months
-    foreclosureChargesPercent
-}) => {
-    const p = Number(outstandingPrincipal) || 0;
-    const rateAnnual = Number(interestRate) || 0;
-    const n = Number(remainingTenure) || 0;
-    const penaltyPercent = Number(foreclosureChargesPercent) || 0;
+import { numberInRange, monthlyPayment } from './validation';
 
-    const r = rateAnnual / 12 / 100;
+const empty = { foreclosureCost: 0, penalty: 0, penaltyBase: 0, gst: 0, interestIfContinued: 0, totalIfContinued: 0, emi: 0, netSavings: 0 };
 
-    if (p === 0 || n === 0) {
-        return {
-            foreclosureCost: p, // If 0 tenure, cost is just principal (immediate)
-            penalty: 0,
-            interestIfContinued: 0,
-            totalIfContinued: p,
-            emi: 0,
-            netSavings: 0
-        };
+export const calculateForeclosure = ({ outstandingPrincipal, interestRate, remainingTenure, foreclosureChargesPercent, gstPercent = 18 } = {}) => {
+    try {
+        const principal = numberInRange(outstandingPrincipal, 'Outstanding principal');
+        const rate = numberInRange(interestRate, 'Interest rate', 0, 100);
+        const months = numberInRange(remainingTenure, 'Remaining months', 0, 1200);
+        if (!Number.isInteger(months)) throw new RangeError('Remaining tenure must be a whole number of months.');
+        const chargeRate = numberInRange(foreclosureChargesPercent, 'Foreclosure charge', 0, 100);
+        const gstRate = numberInRange(gstPercent, 'GST rate', 0, 100);
+        const emi = monthlyPayment(principal, rate, months);
+        const totalIfContinued = months ? Math.max(principal, emi * months) : principal;
+        const penaltyBase = principal * chargeRate / 100;
+        const gst = penaltyBase * gstRate / 100;
+        const penalty = penaltyBase + gst;
+        const foreclosureCost = principal + penalty;
+        return { foreclosureCost, penalty, penaltyBase, gst, emi, totalIfContinued,
+            interestIfContinued: totalIfContinued - principal, netSavings: totalIfContinued - foreclosureCost };
+    } catch (error) {
+        return { ...empty, error: error.message };
     }
-
-    // 1. If continued (EMI Calc)
-    let emi = 0;
-    if (rateAnnual === 0) {
-        emi = p / n;
-    } else {
-        emi = (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-    }
-
-    const totalAmount = emi * n;
-    const interestIfContinued = Math.max(0, totalAmount - p);
-
-    // 2. If foreclosed
-    const penaltyBase = p * (penaltyPercent / 100);
-    const gstOnPenalty = penaltyBase * 0.18;
-    const penaltyTotal = penaltyBase + gstOnPenalty;
-
-    const foreclosureCost = p + penaltyTotal;
-
-    // 3. Difference
-    const netSavings = totalAmount - foreclosureCost;
-
-    return {
-        foreclosureCost,
-        penalty: penaltyTotal,
-        gst: gstOnPenalty,
-        interestIfContinued,
-        totalIfContinued: totalAmount,
-        emi,
-        netSavings
-    };
 };

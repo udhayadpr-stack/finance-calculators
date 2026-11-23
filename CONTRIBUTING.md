@@ -24,8 +24,8 @@ Thank you for your interest in contributing! We welcome contributions to both th
     ```
 2.  **Make your changes**. Please follow the coding style of the existing project.
 3.  **Test your changes**.
-    - For `finance_web`, run `npm test` (if available) and verify the UI.
-    - For `orbit_calc`, verify on an emulator or device.
+    - For `finance_web`, run `npm test`, `npm run lint`, `npm run build`, and `npm run test:e2e` (after installing Playwright Chromium).
+    - For `orbit_calc`, run `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build:web`; verify native changes on an emulator or device before release.
 4.  **Commit your changes** with a clear and descriptive message.
     ```bash
     git commit -m "feat: add robust interest rate calculation"

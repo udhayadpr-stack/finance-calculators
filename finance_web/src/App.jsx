@@ -23,6 +23,7 @@ function NavTab({ to, icon: Icon, label, active }) {
   return (
     <Link
       to={to}
+      aria-current={active ? 'page' : undefined}
       className={clsx(
         "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
         active
@@ -44,10 +45,10 @@ function TopNav() {
     <div className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 shadow-sm transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
         {/* Header Layout: Stacked on mobile, Row on Desktop */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
+        <div className="flex flex-col xl:flex-row items-center justify-between gap-4 md:gap-0">
 
           {/* Header Row (Logo + Toggle) */}
-          <div className="flex items-center justify-between w-full md:w-auto md:justify-start gap-4">
+          <div className="flex items-center justify-between w-full xl:w-auto xl:justify-start gap-4">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 bg-gradient-to-br from-primary to-violet-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20 ring-1 ring-white/20">
                 <Landmark className="w-5 h-5" />
@@ -55,15 +56,15 @@ function TopNav() {
               <span className="font-bold text-xl text-gray-900 dark:text-gray-100 tracking-tight font-display">FinCalc</span>
             </div>
             {/* Show Toggle on Mobile here, Desktop here too? */}
-            <div className="md:hidden">
+            <div>
               <ThemeToggle />
             </div>
           </div>
 
           {/* Desktop Actions Wrapper */}
-          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+          <div className="flex items-center gap-4 w-full xl:w-auto justify-between md:justify-end">
             {/* Scrollable Tabs - Fixed Padding and Overflow */}
-            <div className="w-full md:w-auto overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:overflow-visible">
+            <div className="w-full xl:w-auto overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 xl:overflow-visible">
               <div className="flex md:justify-end gap-2 pr-4 md:pr-0 min-w-max">
                 <NavTab to="/" icon={CreditCard} label="Salary" active={path === '/'} />
                 <NavTab to="/pf" icon={PiggyBank} label="EPF" active={path === '/pf'} />
@@ -75,9 +76,7 @@ function TopNav() {
             </div>
 
             {/* Desktop Toggle */}
-            <div className="hidden md:block">
-              <ThemeToggle />
-            </div>
+
           </div>
 
         </div>
@@ -100,6 +99,7 @@ function App() {
             <Route path="/emi" element={<EMICalculator />} />
             <Route path="/mf" element={<MFCalculator />} />
             <Route path="/foreclosure" element={<ForeclosureCalculator />} />
+            <Route path="*" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Calculator not found</h1><Link className="text-primary underline" to="/">Return to salary calculator</Link></div>} />
           </Routes>
         </main>
       </div>

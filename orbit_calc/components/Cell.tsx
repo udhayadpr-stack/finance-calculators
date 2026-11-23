@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { CellData } from '../types';
 
@@ -10,21 +10,18 @@ interface CellProps {
     isActive?: boolean;
 }
 
-export const Cell: React.FC<CellProps> = ({ data, onChange, onFocus, onDelete, isActive }) => {
+export const Cell: React.FC<CellProps> = ({ data, onChange, onFocus, onDelete }) => {
     const inputRef = useRef<TextInput>(null);
 
-    // Auto-focus if active (when added)
-    // useEffect(() => {
-    //   if (isActive && inputRef.current) {
-    //     inputRef.current.focus();
-    //   }
-    // }, [isActive]);
 
     return (
         <View style={styles.container}>
             <View style={styles.inputContainer}>
                 <TextInput
                     ref={inputRef}
+                    accessibilityLabel="Math expression"
+                    autoCorrect={false}
+                    autoCapitalize="none"
                     style={styles.input}
                     value={data.rawInput}
                     onChangeText={onChange}
@@ -41,6 +38,7 @@ export const Cell: React.FC<CellProps> = ({ data, onChange, onFocus, onDelete, i
                     <Text style={styles.resultText}>{data.output}</Text>
                 )}
             </View>
+            {onDelete && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Delete line" onPress={onDelete} style={{padding: 10}}><Text style={styles.errorText}>×</Text></TouchableOpacity>}
         </View>
     );
 };

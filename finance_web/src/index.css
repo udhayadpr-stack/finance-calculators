@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@theme inline {
+  --color-primary: var(--app-primary);
+  --font-display: 'Outfit', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
@@ -16,7 +22,7 @@
     --color-popover: hsl(0, 0%, 100%);
     --color-popover-foreground: hsl(224, 35%, 15%);
 
-    --color-primary: hsl(245, 75%, 58%);
+    --app-primary: hsl(245, 75%, 58%);
     /* Rich Indigo/Violet */
     --color-primary-foreground: hsl(210, 40%, 98%);
 
@@ -49,7 +55,7 @@
     --color-popover: hsl(222.2, 84%, 4.9%);
     --color-popover-foreground: hsl(210, 40%, 98%);
 
-    --color-primary: hsl(217.2, 91.2%, 59.8%);
+    --app-primary: hsl(217.2, 91.2%, 59.8%);
     --color-primary-foreground: hsl(222.2, 47.4%, 11.2%);
 
     --color-secondary: hsl(217.2, 32.6%, 17.5%);
@@ -104,4 +110,10 @@
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+main .grid > * { min-width: 0; }
+button, a, input { touch-action: manipulation; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--app-primary); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm --prefix finance_web ci --include=dev",
+  "buildCommand": "npm --prefix finance_web run build",
+  "outputDirectory": "finance_web/dist",
+  "rewrites": [{ "source": "/((?!assets/).*)", "destination": "/index.html" }]
+}

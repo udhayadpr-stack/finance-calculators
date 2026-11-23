@@ -1,109 +1,41 @@
 import { describe, it, expect } from 'vitest';
 import { calculateGratuity } from '../../src/utils/calculators/gratuity';
-
-describe('Gratuity Calculator Logic', () => {
-    const defaults = {
-        basicPay: 40000,
-        totalCTC: 100000,
-        years: 5,
-        isGovt: false
-    };
-
-    it('Vector 1: Baseline (Private)', () => {
-        const result = calculateGratuity(defaults);
-        // Wage = max(40k, 50k) = 50k
-        // G = 50k * 15 * 5 / 26 = 144230.77
-        expect(Math.round(result.payable)).toBe(144231);
-        expect(result.isWageIncreased).toBe(true);
-        expect(result.taxExempt).toBe(result.payable);
+const defaults = {basicPay: 26000, years: 5};
+describe('Gratuity eligibility, service and exemption', () => {
+    it('uses confirmed wages without inferring them from CTC', () => {
+        expect(calculateGratuity({...defaults, totalCTC: 100000}).payable).toBe(75000);
     });
-
-    it('Vector 2: Govt Employee', () => {
-        const result = calculateGratuity({
-            basicPay: 50000,
-            totalCTC: 80000,
-            years: 20,
-            isGovt: true
-        });
-        // Wage = max(50k, 40k) = 50k
-        // G = 50k * 15 * 20 / 26 = 576923.07
-        expect(Math.round(result.payable)).toBe(576923);
-        expect(result.taxExempt).toBe(result.payable); // Full exemption
+    it('applies the optional floor to qualifying remuneration', () => {
+        const r = calculateGratuity({...defaults, qualifyingRemuneration: 104000, applyWageFloor: true});
+        expect(r.payable).toBe(150000);
+        expect(r.isWageIncreased).toBe(true);
     });
-
-    it('Vector 3: Low Tenure (<5)', () => {
-        const result = calculateGratuity({
-            ...defaults,
-            years: 4
-        });
-        expect(result.payable).toBe(0);
-        expect(result.eligible).toBe(false);
+    it.each([4.5, 4.9, 4.99])('does not round %s into eligibility', years => expect(calculateGratuity({...defaults, years}).eligible).toBe(false));
+    it('does not round exactly six months up', () => expect(calculateGratuity({...defaults, months: 6}).payable).toBe(75000));
+    it('rounds a remainder over six months up', () => expect(calculateGratuity({...defaults, months: 7}).payable).toBe(90000));
+    it('pro-rates fixed-term employment after one full year', () => {
+        expect(calculateGratuity({...defaults, years: 1, months: 6, isFixedTerm: true}).payable).toBe(22500);
+        expect(calculateGratuity({...defaults, years: .99, isFixedTerm: true}).eligible).toBe(false);
     });
-
-    it('Vector 4: High Wage (No Shift)', () => {
-        const result = calculateGratuity({
-            basicPay: 60000,
-            totalCTC: 100000,
-            years: 10,
-            isGovt: false
-        });
-        // Wage = max(60k, 50k) = 60k
-        // G = 60k * 15 * 10 / 26 = 346153.84
-        expect(Math.round(result.payable)).toBe(346154);
-        expect(result.isWageIncreased).toBe(false);
+    it('caps statutory private payout and separates a better contractual award', () => {
+        const r = calculateGratuity({basicPay: 200000, years: 30});
+        expect(r.payable).toBe(2000000);
+        const actual = calculateGratuity({basicPay: 200000, years: 30, actualPayout: 3000000, priorExemption: 500000});
+        expect(actual.payable).toBe(3000000);
+        expect(actual.taxExempt).toBe(1500000);
+        expect(actual.taxable).toBe(1500000);
     });
-
-    it('Vector 5: Tax Limit Hit', () => {
-        const result = calculateGratuity({
-            basicPay: 200000,
-            totalCTC: 400000,
-            years: 30,
-            isGovt: false
-        });
-        // Wage = 200k (200k vs 200k)
-        // G = 200k * 15 * 30 / 26 = 34,61,538.46
-        const expectedGratuity = 3461538;
-        expect(Math.round(result.payable)).toBe(expectedGratuity);
-        expect(result.taxExempt).toBe(2000000);
-        expect(Math.round(result.taxable)).toBe(expectedGratuity - 2000000);
+    it('uses central-government half-year rules and 25L ceiling', () => {
+        expect(calculateGratuity({basicPay: 50000, years: 20, isGovt: true}).payable).toBe(500000);
+        const r = calculateGratuity({basicPay: 200000, years: 35, isGovt: true});
+        expect(r.payable).toBe(2500000);
+        expect(r.taxExempt).toBe(r.payable);
+        expect(r.taxable).toBe(0);
     });
-
-    it('Vector 7: Fixed Term Employment (2 Years)', () => {
-        const result = calculateGratuity({
-            basicPay: 50000,
-            totalCTC: 100000,
-            years: 2,
-            isGovt: false,
-            isFixedTerm: true
-        });
-        // Logic: Valid due to Fixed Term.
-        // G = 50k * 15 * 2 / 26 = 57692.
-        expect(result.eligible).toBe(true);
-        expect(Math.round(result.payable)).toBe(57692);
+    it('limits exemption to actual receipt', () => {
+        const r = calculateGratuity({...defaults, actualPayout: 50000});
+        expect(r.taxExempt).toBe(50000);
+        expect(r.taxable).toBe(0);
     });
-
-    it('Vector 6: Exact 5 Years', () => {
-        const result = calculateGratuity({
-            basicPay: 26000,
-            totalCTC: 50000,
-            years: 5,
-            isGovt: false
-        });
-        // Wage = max(26k, 25k) = 26k
-        // G = 26k * 15 * 5 / 26 = 75000
-        expect(result.payable).toBe(75000);
-        expect(result.eligible).toBe(true);
-    });
-
-    it('Vector 8: Zero CTC (Invalid input handling)', () => {
-        const result = calculateGratuity({
-            basicPay: 20000,
-            totalCTC: 0,
-            years: 10,
-            isGovt: false
-        });
-        // Wage = max(20k, 0) = 20k
-        // G = 20k * 15 * 10 / 26 = 115384.61
-        expect(Math.round(result.payable)).toBe(115385);
-    });
+    it.each([{years: NaN}, {basicPay: -1}, {months: 12}])('rejects invalid fields %o', extra => expect(calculateGratuity({...defaults,...extra}).error).toBeTruthy());
 });

@@ -1,14 +1,16 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CellData, Workspace } from '../types';
+import { CellData } from '../types';
 import { OrbitEngine } from './engine';
-import { v4 as uuidv4 } from 'uuid';
-import 'react-native-get-random-values';
+import { randomUUID } from 'expo-crypto';
 
 interface WorkspaceState {
     cells: CellData[];
     engine: OrbitEngine;
+    hasHydrated: boolean;
+    storageError?: string;
+    finishHydration: (error?: string) => void;
     addCell: (afterId?: string) => void;
     updateCellInput: (id: string, input: string) => void;
     deleteCell: (id: string) => void;
@@ -19,16 +21,18 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     persist(
         (set, get) => ({
             cells: [
-                { id: uuidv4(), rawInput: '' },
+                { id: 'initial-cell', rawInput: '' },
             ],
             engine: new OrbitEngine(),
+            hasHydrated: false,
+            finishHydration: (storageError) => set({ hasHydrated: true, storageError }),
 
             addCell: (afterId) => {
                 set((state) => {
-                    const newCell: CellData = { id: uuidv4(), rawInput: '' };
+                    const newCell: CellData = { id: randomUUID(), rawInput: '' };
                     const index = state.cells.findIndex(c => c.id === afterId);
 
-                    let newCells = [...state.cells];
+                    const newCells = [...state.cells];
                     if (index === -1) {
                         newCells.push(newCell);
                     } else {
@@ -46,9 +50,10 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             },
 
             deleteCell: (id) => {
-                set((state) => ({
-                    cells: state.cells.filter(c => c.id !== id)
-                }));
+                set((state) => {
+                    const remaining = state.cells.filter(c => c.id !== id);
+                    return { cells: remaining.length ? remaining : [{ id: randomUUID(), rawInput: '' }] };
+                });
                 get().evaluateAll();
             },
 
@@ -73,13 +78,35 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         }),
         {
             name: 'orbit-workspace',
-            storage: createJSONStorage(() => AsyncStorage),
-            partialize: (state) => ({ cells: state.cells }), // Do not persist engine
-            onRehydrateStorage: () => (state) => {
-                // Re-run evaluation to populate engine scope after rehydration
-                if (state) {
-                    state.evaluateAll();
-                }
+            storage: createJSONStorage(() => ({
+                getItem: (name) => AsyncStorage.getItem(name),
+                removeItem: (name) => AsyncStorage.removeItem(name),
+                setItem: async (name, value) => {
+                    try { await AsyncStorage.setItem(name, value); }
+                    catch {
+                        const message = 'Changes could not be saved on this device. Keep this session open or share your worksheet.';
+                        if (useWorkspaceStore.getState().storageError !== message) {
+                            useWorkspaceStore.setState({ storageError: message });
+                        }
+                    }
+                },
+            })),
+            skipHydration: true,
+            partialize: (state) => ({ cells: state.cells.map(({id, rawInput}) => ({id, rawInput})) }),
+            merge: (persisted, current) => {
+                const saved = persisted as { cells?: unknown } | undefined;
+                if (!Array.isArray(saved?.cells)) return current;
+                const seen = new Set<string>();
+                const cells = saved.cells.filter((cell): cell is CellData => {
+                    if (!cell || typeof cell.id !== 'string' || typeof cell.rawInput !== 'string' || seen.has(cell.id)) return false;
+                    seen.add(cell.id);
+                    return true;
+                }).map(({id, rawInput}) => ({id, rawInput}));
+                return { ...current, cells: cells.length ? cells : current.cells };
+            },
+            onRehydrateStorage: (initial) => (state, error) => {
+                if (state) state.evaluateAll();
+                (state ?? initial).finishHydration(error ? 'Saved workspace could not be loaded. This session may not be saved.' : undefined);
             }
         }
     )

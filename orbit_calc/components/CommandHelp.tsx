@@ -25,7 +25,7 @@ const COMMANDS = [
 
 export const CommandHelp: React.FC<CommandHelpProps> = ({ visible, onClose }) => {
     return (
-        <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+        <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
                     <Text style={styles.title}>Available Commands</Text>

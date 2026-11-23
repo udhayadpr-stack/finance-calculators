@@ -1,4 +1,4 @@
-import { create, all, MathJsStatic } from 'mathjs';
+import { create, all } from 'mathjs';
 
 // Create a mathjs instance
 const math = create(all, {
@@ -7,26 +7,38 @@ const math = create(all, {
 });
 
 export interface MathResult {
-  value: any;
+  value: unknown;
   text: string;
   error?: string;
   isUnit?: boolean;
 }
 
 export class OrbitEngine {
-  private scope: any;
+  private scope: Map<string, unknown>;
 
-  constructor(initialScope: any = {}) {
-    this.scope = { ...initialScope };
+  constructor(initialScope: Record<string, unknown> = {}) {
+    this.scope = new Map(Object.entries(initialScope));
   }
 
   public evaluate(expression: string): MathResult {
+    let snapshot: Map<string, unknown> | undefined;
     try {
       // Basic sanitization or pre-processing can go here
       const trimmed = expression.trim();
       if (!trimmed) return { value: null, text: '' };
 
-      const result = math.evaluate(trimmed, this.scope);
+      if (trimmed.length > 2000) throw new Error('Keep each expression under 2,000 characters.');
+      const node = math.parse(trimmed);
+      const blocked = new Set(['import', 'createUnit', 'evaluate', 'parse', 'compile', 'reviver']);
+      node.traverse(child => {
+        if (child.type === 'SymbolNode' && blocked.has((child as unknown as { name: string }).name)) {
+          throw new Error('This function is unavailable in the workspace.');
+        }
+      });
+      // A failed expression must not leak partial assignments into later lines.
+      snapshot = new Map([...this.scope].map(([key, value]) => [key, math.clone(value)]));
+      // Preserve Map identity: user functions close over this scope and must see later edits.
+      const result = node.evaluate(this.scope);
 
       let textResult = '';
       let isUnit = false;
@@ -47,21 +59,25 @@ export class OrbitEngine {
         text: textResult,
         isUnit,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (snapshot) {
+        this.scope.clear();
+        for (const [key, value] of snapshot) this.scope.set(key, value);
+      }
       return {
         value: null,
         text: '',
-        error: err.message,
+        error: err instanceof Error ? err.message : 'Unable to evaluate expression.',
       };
     }
   }
 
-  public getScope(): any {
-    return this.scope;
+  public getScope(): Record<string, unknown> {
+    return Object.fromEntries(this.scope);
   }
 
   public clearScope() {
-    this.scope = {};
+    this.scope.clear();
   }
 }
 

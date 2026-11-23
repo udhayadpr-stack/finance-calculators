@@ -1,3 +1,4 @@
+import { CalculatorNotice } from '../ui/CalculatorNotice';
 import React, { useState, useMemo } from 'react';
 import {
     XOctagon,
@@ -7,7 +8,7 @@ import {
     X
 } from 'lucide-react';
 import { MoneyInput } from '../ui/MoneyInput';
-import { toINR, parseMoney } from '../../utils/formatters';
+import { toINR } from '../../utils/formatters';
 
 import { calculateForeclosure } from '../../utils/calculators/foreclosure';
 
@@ -15,16 +16,17 @@ export default function ForeclosureCalculator() {
     const [outstandingPrincipal, setOutstandingPrincipal] = useState(2000000);
     const [interestRate, setInterestRate] = useState(9);
     const [remainingTenure, setRemainingTenure] = useState(60); // months
+    const [gstPercent, setGstPercent] = useState(18);
     const [foreclosureChargesPercent, setForeclosureChargesPercent] = useState(0);
 
     const calc = useMemo(() => {
         return calculateForeclosure({
-            outstandingPrincipal: parseMoney(outstandingPrincipal),
+            outstandingPrincipal,
             interestRate,
             remainingTenure,
-            foreclosureChargesPercent
+            foreclosureChargesPercent, gstPercent
         });
-    }, [outstandingPrincipal, interestRate, remainingTenure, foreclosureChargesPercent]);
+    }, [outstandingPrincipal, interestRate, remainingTenure, foreclosureChargesPercent, gstPercent]);
 
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
@@ -44,6 +46,7 @@ export default function ForeclosureCalculator() {
                         </div>
                     </div>
 
+                    <CalculatorNotice error={calc.error}>Nominal remaining payments versus settlement today. Excludes accrued daily interest, other charges, investment returns and liquidity needs. Use charges from your lender’s settlement quote.</CalculatorNotice>
                     <div className="space-y-6">
                         <MoneyInput
                             label="Outstanding Principal"
@@ -66,7 +69,9 @@ export default function ForeclosureCalculator() {
                                 <div className="relative">
                                     <input
                                         type="number"
-                                        value={remainingTenure === 0 ? '' : remainingTenure}
+                                        aria-label="Remaining tenure in months"
+                                    min="0" max="1200"
+                                    value={remainingTenure === 0 ? '' : remainingTenure}
                                         onChange={e => {
                                             const val = e.target.value;
                                             setRemainingTenure(val === '' ? 0 : Number(val));
@@ -78,6 +83,7 @@ export default function ForeclosureCalculator() {
                             </div>
                         </div>
 
+                        <MoneyInput label="GST on charges (%)" symbol="%" value={gstPercent} max={100} onChange={setGstPercent} />
                         <div className="pt-2">
                             <div className="flex justify-between mb-3 px-1">
                                 <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Foreclosure Charges</label>
@@ -85,6 +91,7 @@ export default function ForeclosureCalculator() {
                             </div>
                             <input
                                 type="range"
+                                aria-label="Foreclosure charges"
                                 min="0" max="10" step="0.5"
                                 value={foreclosureChargesPercent}
                                 onChange={(e) => setForeclosureChargesPercent(Number(e.target.value))}
@@ -92,7 +99,7 @@ export default function ForeclosureCalculator() {
                             />
                             <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2.5 flex items-center gap-1.5">
                                 <AlertOctagon className="w-3 h-3" />
-                                <span>Typical bank penalty is 2-4% on principal</span>
+                                <span>Charges can be zero; enter the rate in your loan agreement.</span>
                             </p>
                         </div>
                     </div>
@@ -105,7 +112,7 @@ export default function ForeclosureCalculator() {
                 {/* VERDICT CARD */}
                 <div className={`rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden group transition-all duration-500 transform hover:scale-[1.01] ${calc.netSavings > 0 ? 'bg-gradient-to-br from-emerald-500 to-teal-700 shadow-emerald-500/20 dark:shadow-emerald-900/20' : 'bg-gradient-to-br from-red-500 to-rose-700 shadow-red-500/20 dark:shadow-red-900/20'}`}>
                     {/* Background Pattern */}
-                    <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
+
 
                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="space-y-4 max-w-sm">
@@ -116,19 +123,19 @@ export default function ForeclosureCalculator() {
                                         : <AlertOctagon className="w-6 h-6 text-white" />
                                     }
                                 </div>
-                                <span className="text-sm font-bold uppercase tracking-widest text-white/80">Verdict</span>
+                                <span className="text-sm font-bold uppercase tracking-widest text-white/80">Cost comparison</span>
                             </div>
 
                             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight font-display">
                                 {calc.netSavings > 0
                                     ? <span>You Save <br /><span className="text-emerald-50 bg-emerald-900/10 px-2 rounded-lg">{toINR(Math.round(calc.netSavings))}</span></span>
-                                    : <span>You Lose <br /><span className="text-red-50 bg-red-900/10 px-2 rounded-lg">{toINR(Math.round(Math.abs(calc.netSavings)))}</span></span>}
+                                    : <span>{calc.netSavings === 0 ? "No cost difference" : "Extra cost"} <br /><span className="text-red-50 bg-red-900/10 px-2 rounded-lg">{toINR(Math.round(Math.abs(calc.netSavings)))}</span></span>}
                             </h2>
 
                             <p className="text-white/90 font-medium leading-relaxed text-sm md:text-base border-l-2 border-white/30 pl-4 py-1">
                                 {calc.netSavings > 0
-                                    ? "Foreclosing now is financially beneficial despite the penalty charges."
-                                    : "Foreclosing now is more expensive than continuing the loan."}
+                                    ? "Estimated interest avoided exceeds the entered settlement charges."
+                                    : (calc.netSavings === 0 ? "Both options have the same nominal cost." : "Entered settlement charges exceed the estimated interest avoided.")}
                             </p>
                         </div>
 
@@ -136,8 +143,8 @@ export default function ForeclosureCalculator() {
                         <div className="hidden md:flex flex-col items-center justify-center relative w-32 h-32 shrink-0">
                             <div className="absolute inset-0 border-4 border-white/20 rounded-full animate-[spin_10s_linear_infinite]"></div>
                             <div className="absolute inset-2 border-4 border-t-white border-r-white/50 border-white/10 rounded-full rotate-45"></div>
-                            <span className="text-2xl font-bold">{calc.netSavings > 0 ? "YES" : "NO"}</span>
-                            <span className="text-[10px] uppercase font-bold tracking-widest mt-1 opacity-70">Close It?</span>
+                            <span className="text-2xl font-bold">{calc.netSavings > 0 ? "LOWER" : calc.netSavings < 0 ? "HIGHER" : "EQUAL"}</span>
+                            <span className="text-[10px] uppercase font-bold tracking-widest mt-1 opacity-70">Closure cost</span>
                         </div>
                     </div>
                 </div>
@@ -150,13 +157,14 @@ export default function ForeclosureCalculator() {
                                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">If Continued</div>
                             </div>
 
-                            <div className="space-y-6">
+                            <CalculatorNotice error={calc.error}>Nominal remaining payments versus settlement today. Excludes accrued daily interest, other charges, investment returns and liquidity needs. Use charges from your lender’s settlement quote.</CalculatorNotice>
+                    <div className="space-y-6">
                                 <div>
                                     <span className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Remaining Interest</span>
                                     <span className="block text-2xl font-bold text-amber-600 dark:text-amber-400 font-mono tracking-tight">{toINR(Math.round(calc.interestIfContinued))}</span>
                                 </div>
                                 <div className="pt-4 border-t border-gray-100/80 dark:border-slate-700/50">
-                                    <span className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Total Future Output</span>
+                                    <span className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Total Future Payments</span>
                                     <span className="block text-xl font-bold text-gray-900 dark:text-white">{toINR(Math.round(calc.totalIfContinued))}</span>
                                 </div>
                             </div>
@@ -171,9 +179,10 @@ export default function ForeclosureCalculator() {
                                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">If Foreclosed</div>
                             </div>
 
-                            <div className="space-y-6">
+                            <CalculatorNotice error={calc.error}>Nominal remaining payments versus settlement today. Excludes accrued daily interest, other charges, investment returns and liquidity needs. Use charges from your lender’s settlement quote.</CalculatorNotice>
+                    <div className="space-y-6">
                                 <div>
-                                    <span className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Penalty (+18% GST)</span>
+                                    <span className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Charges (including {gstPercent}% GST)</span>
                                     <span className="block text-2xl font-bold text-rose-500 dark:text-rose-400 font-mono tracking-tight">{toINR(Math.round(calc.penalty))}</span>
                                 </div>
                                 <div className="pt-4 border-t border-gray-100/80 dark:border-slate-700/50">

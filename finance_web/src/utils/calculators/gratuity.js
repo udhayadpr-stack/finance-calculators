@@ -1,55 +1,35 @@
-export const calculateGratuity = ({
-    basicPay,
-    totalCTC,
-    years,
-    isGovt,
-    isFixedTerm = false // New Parameter
-}) => {
-    // Input sanitization
-    const salaryInput = Number(basicPay) || 0;
-    const ctcInput = Number(totalCTC) || 0;
-    const n = Math.round(Number(years));
-    const govtStatus = !!isGovt;
-    const fixedTerm = !!isFixedTerm;
+import { numberInRange } from './validation';
 
-    // Derived Wage Basis (Code on Wages Rule: Basic must be at least 50% of CTC)
-    // If Basic < 50% CTC, use 50% CTC as the wage basis for calculation.
-    const wageBasis = Math.max(salaryInput, ctcInput * 0.5);
-    const isWageIncreased = wageBasis > salaryInput;
+const empty = { payable: 0, eligible: false, taxExempt: 0, taxable: 0, limit: 2000000, wageBasis: 0, isWageIncreased: false, countedYears: 0 };
 
-    // Limits: Fully exempt for Govt, 20L for Private (as of FY 2025-26)
-    const TAX_FREE_LIMIT = govtStatus ? Infinity : 2000000;
-
-    // Eligibility check
-    // Standard: 5 years. Fixed Term: 1 year.
-    const minYears = fixedTerm ? 1 : 5;
-
-    if (n < minYears) {
-        return {
-            payable: 0,
-            eligible: false,
-            taxExempt: 0,
-            taxable: 0,
-            limit: TAX_FREE_LIMIT,
-            wageBasis,
-            isWageIncreased
-        };
+export const calculateGratuity = ({ basicPay, qualifyingRemuneration = 0, years, months = 0,
+    isGovt = false, isFixedTerm = false, applyWageFloor = false, actualPayout, priorExemption = 0 } = {}) => {
+    try {
+        const basic = numberInRange(basicPay, 'Monthly qualifying wages');
+        const remuneration = applyWageFloor && !isGovt ? numberInRange(qualifyingRemuneration, 'Qualifying monthly remuneration') : 0;
+        const serviceYears = numberInRange(years, 'Years of service', 0, 60);
+        const extraMonths = numberInRange(months, 'Additional months', 0, 11);
+        if (!Number.isInteger(extraMonths)) throw new RangeError('Additional months must be a whole number.');
+        const service = serviceYears + extraMonths / 12;
+        if (service > 60) throw new RangeError('Service cannot exceed 60 years.');
+        const wageBasis = !isGovt && applyWageFloor ? Math.max(basic, remuneration * 0.5) : basic;
+        const prior = isGovt ? 0 : numberInRange(priorExemption, 'Previously claimed gratuity exemption', 0, 2000000);
+        const limit = isGovt ? null : 2000000 - prior;
+        const eligible = service >= (!isGovt && isFixedTerm ? 1 : 5);
+        // Eligibility is checked BEFORE rounding service. Exactly six months is not rounded up.
+        const completed = Math.floor(service);
+        const countedYears = isFixedTerm && !isGovt ? service : completed + (service - completed > 0.5 + 1e-9 ? 1 : 0);
+        let formulaAmount = 0;
+        if (eligible) {
+            formulaAmount = isGovt
+                ? Math.min(wageBasis * Math.min(16.5, Math.floor(service * 2 + 1e-9) / 4), 2500000)
+                : wageBasis * 15 * countedYears / 26;
+        }
+        const payable = eligible ? (actualPayout == null ? Math.min(formulaAmount, isGovt ? 2500000 : 2000000) : numberInRange(actualPayout, 'Actual gratuity payout')) : 0;
+        const taxExempt = isGovt ? payable : Math.min(payable, formulaAmount, limit);
+        return { payable, eligible, taxExempt, taxable: payable - taxExempt, limit,
+            wageBasis, isWageIncreased: wageBasis > basic, countedYears, formulaAmount };
+    } catch (error) {
+        return { ...empty, error: error.message };
     }
-
-    // Gratuity Formula: (Wage * 15 * Years) / 26
-    const gratuity = (wageBasis * 15 * n) / 26;
-
-    // Tax Calculation
-    const exempt = Math.min(gratuity, TAX_FREE_LIMIT);
-    const taxable = Math.max(0, gratuity - exempt);
-
-    return {
-        payable: gratuity,
-        eligible: true,
-        taxExempt: exempt,
-        taxable: taxable,
-        limit: TAX_FREE_LIMIT,
-        wageBasis,
-        isWageIncreased
-    };
 };

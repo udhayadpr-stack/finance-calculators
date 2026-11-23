@@ -1,28 +1,33 @@
+import { CalculatorNotice } from '../ui/CalculatorNotice';
 import { useState, useMemo } from 'react';
 import { Award, Info, Briefcase } from 'lucide-react';
 import { MoneyInput } from '../ui/MoneyInput';
 import { ResultCard } from '../ui/ResultCard'; // New Import
-import { toINR, parseMoney } from '../../utils/formatters';
+import { toINR } from '../../utils/formatters';
 import clsx from 'clsx';
 
 import { calculateGratuity } from '../../utils/calculators/gratuity';
 
 export default function GratuityCalculator() {
     const [basicPay, setBasicPay] = useState(40000); // Basic + DA
-    const [totalCTC, setTotalCTC] = useState(100000); // Monthly CTC
+    const [qualifyingRemuneration, setQualifyingRemuneration] = useState(100000);
+    const [applyWageFloor, setApplyWageFloor] = useState(false);
+    const [months, setMonths] = useState(0);
+    const [actualPayout, setActualPayout] = useState(null);
+    const [priorExemption, setPriorExemption] = useState(0);
     const [years, setYears] = useState(5);
     const [isGovt, setIsGovt] = useState(false); // Toggle for Govt/Private
     const [isFixedTerm, setIsFixedTerm] = useState(false);
 
     const calc = useMemo(() => {
         return calculateGratuity({
-            basicPay: parseMoney(basicPay),
-            totalCTC: parseMoney(totalCTC),
+            basicPay,
+            qualifyingRemuneration, applyWageFloor, months, actualPayout, priorExemption,
             years,
             isGovt,
             isFixedTerm
         });
-    }, [basicPay, totalCTC, years, isGovt, isFixedTerm]);
+    }, [basicPay, qualifyingRemuneration, applyWageFloor, months, actualPayout, priorExemption, years, isGovt, isFixedTerm]);
 
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
@@ -45,7 +50,7 @@ export default function GratuityCalculator() {
                     {/* Employee Type Toggle */}
                     <div className="flex bg-slate-50 dark:bg-slate-900/50 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-700 mb-4 transition-colors">
                         <button onClick={() => setIsGovt(false)} className={clsx("flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all", !isGovt ? 'bg-white dark:bg-slate-700 text-primary shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300')}>Private Sector</button>
-                        <button onClick={() => setIsGovt(true)} className={clsx("flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all", isGovt ? 'bg-white dark:bg-slate-700 text-primary shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300')}>Govt. Employee</button>
+                        <button onClick={() => { setIsGovt(true); setIsFixedTerm(false); }} className={clsx("flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all", isGovt ? 'bg-white dark:bg-slate-700 text-primary shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300')}>Central Govt.</button>
                     </div>
 
                     {/* Fixed Term Toggle */}
@@ -55,6 +60,9 @@ export default function GratuityCalculator() {
                             <span className="block text-[10px] text-gray-400 dark:text-gray-500">Lowers eligibility to 1 year</span>
                         </div>
                         <button
+                            aria-label="Fixed term employment"
+                            aria-pressed={isFixedTerm && !isGovt}
+                            disabled={isGovt}
                             onClick={() => setIsFixedTerm(!isFixedTerm)}
                             className={clsx("w-11 h-6 rounded-full transition-colors relative", isFixedTerm ? "bg-amber-500" : "bg-gray-300 dark:bg-slate-600")}
                         >
@@ -64,25 +72,43 @@ export default function GratuityCalculator() {
 
                     <div className="space-y-6 pt-4">
                         <MoneyInput
-                            label="Monthly Basic + DA"
+                            label="Monthly qualifying wages"
                             value={basicPay}
                             onChange={setBasicPay}
                             large
                         />
+                        <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                            <input type="checkbox" checked={applyWageFloor} disabled={isGovt} onChange={e => setApplyWageFloor(e.target.checked)} />
+                            Apply 50% qualifying-remuneration floor
+                        </label>
                         <MoneyInput
-                            label="Monthly Gross CTC"
-                            value={totalCTC}
-                            onChange={setTotalCTC}
+                            readOnlyMode={!applyWageFloor || isGovt}
+                            label="Qualifying monthly remuneration"
+                            value={qualifyingRemuneration}
+                            onChange={setQualifyingRemuneration}
                         />
                         <div className="bg-amber-50/50 dark:bg-amber-900/10 rounded-xl p-3 border border-amber-100 dark:border-amber-800 flex items-start gap-2.5 transition-colors">
                             <Info className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                             <p className="text-[10px] text-amber-700 dark:text-amber-300 leading-relaxed font-medium">
-                                Code on Wages (Nov 2025): If Basic+DA is less than 50% of CTC, calculation uses 50% of CTC.
+                                Use employer-confirmed wages, including applicable DA and retaining allowance. The optional 50% floor uses qualifying remuneration, not total CTC; exclude gratuity, ESI and other retirement benefits.
                             </p>
                         </div>
                     </div>
 
                     <div className="space-y-4">
+                        <label className="block text-xs font-semibold">Additional completed months
+                            <input aria-label="Additional completed months" type="number" min="0" max="11" value={months} onChange={e => setMonths(Number(e.target.value))} className="mt-2 w-full rounded-xl border p-3 bg-transparent" />
+                        </label>
+                        <label className="flex items-center gap-2 text-xs">
+                            <input type="checkbox" checked={actualPayout !== null} onChange={e => setActualPayout(e.target.checked ? calc.payable : null)} />
+                            Use actual employer payout
+                        </label>
+                        {actualPayout !== null && <MoneyInput label="Actual gratuity payout" value={actualPayout} onChange={setActualPayout} />}
+                        {!isGovt && <MoneyInput label="Prior gratuity tax exemption" value={priorExemption} max={2000000} onChange={setPriorExemption} />}
+                        <CalculatorNotice error={calc.error}>
+                            {isGovt ? 'Central government retirement model: completed half-years, maximum 16.5 months of pay and ₹25 lakh. State and PSU rules may differ.' : 'Covered private employment: 15/26 of qualifying wages per counted year, with a ₹20 lakh statutory payout ceiling. Fixed-term service is pro-rated. Regular service requires five actual years; only a remainder over six months rounds up.'}
+                            {' '}Actual payouts may follow better employer terms. Death/disability and disputed continuous-service cases are outside this estimate.
+                        </CalculatorNotice>
                         <div>
                             <div className="flex justify-between items-center mb-3 px-1">
                                 <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Years of Service</label>
@@ -90,6 +116,7 @@ export default function GratuityCalculator() {
                             </div>
                             <input
                                 type="range"
+                                aria-label="Years of service"
                                 min="1" max="50"
                                 value={years}
                                 onChange={(e) => setYears(Number(e.target.value))}
@@ -98,7 +125,7 @@ export default function GratuityCalculator() {
                             {!calc.eligible && (
                                 <div className="mt-4 text-xs text-rose-600 dark:text-rose-400 font-bold flex items-center gap-2 bg-rose-50 dark:bg-rose-900/20 p-3 rounded-xl border border-rose-100 dark:border-rose-900/30 transition-colors">
                                     <Info className="w-4 h-4" />
-                                    Minimum {isFixedTerm ? '1 year' : '5 years'} required for eligibility
+                                    Minimum {isFixedTerm && !isGovt ? '1 year' : '5 years'} required for eligibility
                                 </div>
                             )}
                         </div>
@@ -121,7 +148,7 @@ export default function GratuityCalculator() {
                     <ResultCard
                         label="Tax Exempt"
                         value={Math.round(calc.taxExempt)}
-                        subtext={`Max Cap: ${toINR(calc.limit)}`}
+                        subtext={isGovt ? "Fully exempt for eligible government gratuity" : `Remaining lifetime exemption: ${toINR(calc.limit)}`}
                         type="secondary"
                         delay={100}
                     />
@@ -138,7 +165,7 @@ export default function GratuityCalculator() {
                         <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
                         <div className="text-sm text-indigo-800 dark:text-indigo-200 leading-relaxed">
                             <strong className="block mb-1 text-indigo-900 dark:text-indigo-100">Wage Code Impact</strong>
-                            Calculation used <strong className="decoration-2 underline decoration-indigo-300 dark:decoration-indigo-600">{toINR(calc.wageBasis)}</strong> (50% CTC) as the basis instead of Basic pay, resulting in a higher gratuity.
+                            Calculation used <strong className="decoration-2 underline decoration-indigo-300 dark:decoration-indigo-600">{toINR(calc.wageBasis)}</strong> (50% of qualifying remuneration) as the basis instead of Basic pay, resulting in a higher gratuity.
                         </div>
                     </div>
                 )}

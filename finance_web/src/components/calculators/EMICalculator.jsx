@@ -1,12 +1,15 @@
+import { CalculatorNotice } from '../ui/CalculatorNotice';
 import React, { useState, useMemo } from 'react';
 import {
     Home,
     Calendar,
-    PieChart
+    PieChart,
+    Download
 } from 'lucide-react';
 import { MoneyInput } from '../ui/MoneyInput';
-import { toINR, parseMoney } from '../../utils/formatters';
+import { toINR, percentage } from '../../utils/formatters';
 
+import { downloadSchedule } from '../../utils/download';
 import { calculateEMI } from '../../utils/calculators/emi';
 
 export default function EMICalculator() {
@@ -16,7 +19,7 @@ export default function EMICalculator() {
 
     const calc = useMemo(() => {
         return calculateEMI({
-            loanAmount: parseMoney(loanAmount),
+            loanAmount,
             interestRate,
             tenureYears
         });
@@ -39,6 +42,7 @@ export default function EMICalculator() {
                         </div>
                     </div>
 
+                    <CalculatorNotice error={calc.error}>Fixed reducing-balance loan with monthly payments. Tenure is rounded to the nearest month. Processing fees and rate changes are excluded.</CalculatorNotice>
                     <div className="space-y-6">
                         <MoneyInput
                             label="Loan Amount"
@@ -60,6 +64,8 @@ export default function EMICalculator() {
                                 <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest group-focus-within:text-violet-600 dark:group-focus-within:text-violet-400 transition-colors">Tenure (Years)</label>
                                 <input
                                     type="number"
+                                    aria-label="Tenure in years"
+                                    min="0" max="100"
                                     value={tenureYears === 0 ? '' : tenureYears}
                                     onChange={e => {
                                         const val = e.target.value;
@@ -77,6 +83,7 @@ export default function EMICalculator() {
                             </div>
                             <input
                                 type="range"
+                                aria-label="Loan tenure slider"
                                 min="1" max="30"
                                 value={tenureYears}
                                 onChange={(e) => setTenureYears(parseInt(e.target.value))}
@@ -99,7 +106,7 @@ export default function EMICalculator() {
                     <div className="relative z-10 w-full flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>
                             <div className="text-violet-200 text-xs font-bold uppercase tracking-widest mb-2">Monthly EMI</div>
-                            <div className="text-5xl font-bold tracking-tight font-display">{toINR(Math.round(calc.emi))}</div>
+                            <div className="text-3xl sm:text-4xl font-bold tracking-tight font-display">{toINR(Math.round(calc.emi))}</div>
                         </div>
                         <div className="text-left md:text-right bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/10">
                             <div className="text-violet-100 text-[10px] font-bold uppercase tracking-widest mb-1">Total Amount Payable</div>
@@ -115,9 +122,9 @@ export default function EMICalculator() {
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">{toINR(Math.round(loanAmount))}</div>
                             <div className="mt-3 flex items-center gap-2">
                                 <div className="h-1.5 w-full bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                    <div style={{ width: `${(loanAmount / calc.totalAmount) * 100}%` }} className="h-full bg-gray-400 dark:bg-slate-500 rounded-full"></div>
+                                    <div style={{ width: `${percentage(loanAmount, calc.totalAmount)}%` }} className="h-full bg-gray-400 dark:bg-slate-500 rounded-full"></div>
                                 </div>
-                                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 whitespace-nowrap">{Math.round((loanAmount / calc.totalAmount) * 100)}%</span>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 whitespace-nowrap">{Math.round(percentage(loanAmount, calc.totalAmount))}%</span>
                             </div>
                         </div>
                     </div>
@@ -127,9 +134,9 @@ export default function EMICalculator() {
                             <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{toINR(Math.round(calc.totalInterest))}</div>
                             <div className="mt-3 flex items-center gap-2">
                                 <div className="h-1.5 w-full bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                    <div style={{ width: `${(calc.totalInterest / calc.totalAmount) * 100}%` }} className="h-full bg-amber-500 rounded-full"></div>
+                                    <div style={{ width: `${percentage(calc.totalInterest, calc.totalAmount)}%` }} className="h-full bg-amber-500 rounded-full"></div>
                                 </div>
-                                <span className="text-[10px] font-bold text-amber-500 whitespace-nowrap">{Math.round((calc.totalInterest / calc.totalAmount) * 100)}%</span>
+                                <span className="text-[10px] font-bold text-amber-500 whitespace-nowrap">{Math.round(percentage(calc.totalInterest, calc.totalAmount))}%</span>
                             </div>
                         </div>
                     </div>
@@ -141,6 +148,7 @@ export default function EMICalculator() {
                             <Calendar className="w-4 h-4 text-violet-500 dark:text-violet-400" />
                         </div>
                         Amortization Schedule (Yearly)
+                        <button type="button" className="ml-auto flex items-center gap-1 text-xs text-primary disabled:opacity-50" disabled={!calc.monthlySchedule.length} onClick={() => downloadSchedule(calc.monthlySchedule)}><Download className="h-4 w-4" />Export CSV</button>
                     </div>
                     <div className="max-h-[300px] overflow-auto custom-scrollbar">
                         <table className="w-full text-sm text-left">

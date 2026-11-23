@@ -37,15 +37,15 @@ describe('Foreclosure Calculator Logic', () => {
 
     it('Vector 6: Zero Rate (1L, 0%, 12m, 2%)', () => {
         // P=1L, Int=0. Total=1L.
-        // Foreclose = 1L + 2k.
-        // Savings = 1L - 1.02L = -2000.
+        // Foreclose = 1L + 2k + 360 GST.
+        // Savings = 1L - 1.0236L = -2360.
         const result = calculateForeclosure({
             outstandingPrincipal: 100000,
             interestRate: 0,
             remainingTenure: 12,
             foreclosureChargesPercent: 2
         });
-        expect(result.netSavings).toBe(-2000);
+        expect(result.netSavings).toBe(-2360);
         expect(result.emi).toBeCloseTo(8333.33, 1);
     });
 
